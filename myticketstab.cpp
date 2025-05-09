@@ -5,23 +5,33 @@
 #include <QtSql/QSqlRecord>
 #include <QtSql/QSqlError>
 #include <QDebug>
+#include <QPushButton>
+#include <QTableView>
+#include <QMessageBox>
 
-MyTicketsTab::MyTicketsTab(int userId, const QString& role, QWidget *parent)
-    : QWidget(parent), userId(userId), userRole(role) {
+
+MyTicketsTab::MyTicketsTab(int userId, const QString& role_, QWidget* parent)
+    : QWidget(parent), userId(userId), role(role_) {
+
+    QVBoxLayout* layout = new QVBoxLayout(this);
     table = new QTableView(this);
-    model = new QStandardItemModel(this);
-    model->setHorizontalHeaderLabels({"ID", "Название", "Приоритет", "Проект", "Статус"});
-
-    table->setModel(model);
-    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    table->horizontalHeader()->setStretchLastSection(true);
-
-    QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(table);
-    setLayout(layout);
+
+    if (role == "начальник") {
+        createTicketButton = new QPushButton("Создать тикет", this);
+        layout->addWidget(createTicketButton);
+        connect(createTicketButton, &QPushButton::clicked, this, &MyTicketsTab::onCreateTicketClicked);
+    }
 
     loadTickets();
 }
+
+void MyTicketsTab::onCreateTicketClicked() {
+    // Здесь можно открыть новое окно для создания тикета
+    QMessageBox::information(this, "Создание тикета", "Окно создания тикета ещё не реализовано.");
+}
+
+
 
 void MyTicketsTab::loadTickets() {
     QSqlQuery query;
