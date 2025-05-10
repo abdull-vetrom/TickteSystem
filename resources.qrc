@@ -1,0 +1,16 @@
+<RCC>
+  <qresource prefix="/sql">
+    <file>getChiefProjects.sql</file>
+    <file>getEmployeeProjects.sql</file>
+    <file>getPrioritiesName.sql</file>
+    <file>getProjectsName.sql</file>
+    <file>getProjectWatchers.sql</file>
+    <file>getStatusesName.sql</file>
+    <file>getTrackersName.sql</file>
+    <file>getUserLoginInfo.sql</file>
+    <file>getUserProfileInfo.sql</file>
+    <file>getUsersFullName.sql</file>
+    <file>getUserTickets.sql</file>
+    <file>saveTicket.sql</file>
+  </qresource>
+</RCC>

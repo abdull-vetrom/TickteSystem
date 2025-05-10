@@ -1,6 +1,8 @@
 #include "myprojectstab.h"
+#include "utils.h"
 #include <QVBoxLayout>
 #include <QtSql/QSqlQuery>
+#include <QtSql/QSqlError>
 
 MyProjectsTab::MyProjectsTab(int userId, const QString& role, QWidget *parent)
     : QWidget(parent), userId(userId), userRole(role) {
@@ -14,17 +16,27 @@ MyProjectsTab::MyProjectsTab(int userId, const QString& role, QWidget *parent)
 }
 
 void MyProjectsTab::loadProjects() {
+    list->clear();
     QSqlQuery query;
+
+    QString sql;
+
     if (userRole == "начальник") {
-        query.exec("SELECT DISTINCT project FROM tickets WHERE assigned_to IN "
-                   "(SELECT full_name FROM users WHERE department = "
-                   "(SELECT department FROM users WHERE id = " + QString::number(userId) + "))");
+        sql = loadSqlQuery(":/sql/getChiefProjects.sql");
     } else {
-        query.exec("SELECT DISTINCT project FROM tickets WHERE assigned_to = "
-                   "(SELECT full_name FROM users WHERE id = " + QString::number(userId) + ")");
+        sql = loadSqlQuery(":/sql/getEmployeeProjects.sql");
+    }
+
+    query.prepare(sql);
+    query.bindValue(":userId", userId);
+
+    if (!query.exec()) {
+        qDebug() << "Ошибка SQL:" << query.lastError().text();
+        return;
     }
 
     while (query.next()) {
         list->addItem(query.value(0).toString());
     }
 }
+
