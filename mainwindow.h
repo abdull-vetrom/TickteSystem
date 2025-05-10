@@ -11,7 +11,7 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow(int userId, const QString& fullName, const QString& role, QWidget *parent = nullptr);
+    MainWindow(int userId, const QString& name, const QString& role, QWidget *parent = nullptr);
     ~MainWindow();
 
 private:

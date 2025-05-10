@@ -1,5 +1,6 @@
 #include "createticketdialog.h"
 #include "ui_createticketdialog.h"
+#include "utils.h"
 #include <QMessageBox>
 #include <QSqlError>
 #include <QDateTime>
@@ -26,32 +27,32 @@ void CreateTicketDialog::populateCombos()
 {
     QSqlQuery query;
 
-    // Проекты
-    if (query.exec("SELECT name FROM projects")) {
+    QString sql = loadSqlQuery(":/sql/getProjectsName.sql");
+    if (query.exec(sql)) {
         while (query.next())
             ui->projectCombo->addItem(query.value(0).toString());
     }
 
-    // Трекеры
-    if (query.exec("SELECT name FROM trackers")) {
+    sql = loadSqlQuery(":/sql/getTrackersName.sql");
+    if (query.exec(sql)) {
         while (query.next())
             ui->trackerCombo->addItem(query.value(0).toString());
     }
 
-    // Статусы
-    if (query.exec("SELECT name FROM statuses")) {
+    sql = loadSqlQuery(":/sql/getStatusesName.sql");
+    if (query.exec(sql)) {
         while (query.next())
             ui->statusCombo->addItem(query.value(0).toString());
     }
 
-    // Приоритеты
-    if (query.exec("SELECT name FROM priorities")) {
+    sql = loadSqlQuery(":/sql/getPrioritiesName.sql");
+    if (query.exec(sql)) {
         while (query.next())
             ui->priorityCombo->addItem(query.value(0).toString());
     }
 
-    // Назначена — все пользователи
-    if (query.exec("SELECT CONCAT(first_name, ' ', last_name) FROM users")) {
+    sql = loadSqlQuery(":/sql/getUsersFullName.sql");
+    if (query.exec(sql)) {
         while (query.next())
             ui->assigneeCombo->addItem(query.value(0).toString());
     }
@@ -65,13 +66,8 @@ void CreateTicketDialog::updateWatchersByProject()
     ui->watcherCombo->clear();
 
     QSqlQuery query;
-    query.prepare(R"(
-        SELECT u.first_name, u.last_name
-        FROM projects p
-        JOIN departments d ON p.department_id = d.id
-        JOIN users u ON u.department_id = d.id
-        WHERE p.name = ?
-    )");
+    QString sql = loadSqlQuery(":/sql/getProjectWatchers.sql");
+    query.prepare(sql);
     query.addBindValue(ui->projectCombo->currentText());
 
     if (query.exec()) {
@@ -139,23 +135,20 @@ void CreateTicketDialog::on_confirmButton_clicked()
     }
 
     QSqlQuery insert;
-    insert.prepare(R"(
-        INSERT INTO tickets
-        (title, description, project_id, tracker_id, status_id, priority_id, assignee_id, watcher_id, creator_id, start_date, attachment)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    )");
+    QString sql = loadSqlQuery(":/sql/saveTicket.sql");
+    insert.prepare(sql);
 
-    insert.addBindValue(title);
-    insert.addBindValue(description);
-    insert.addBindValue(projectId);
-    insert.addBindValue(trackerId);
-    insert.addBindValue(statusId);
-    insert.addBindValue(priorityId);
-    insert.addBindValue(assigneeId);
-    insert.addBindValue(watcherId);
-    insert.addBindValue(userId);
-    insert.addBindValue(startDate);
-    insert.addBindValue(attachedFilePath);
+    insert.bindValue(":title", title);
+    insert.bindValue(":description", description);
+    insert.bindValue(":project_id", projectId);
+    insert.bindValue(":tracker_id", trackerId);
+    insert.bindValue(":status_id", statusId);
+    insert.bindValue(":priority_id", priorityId);
+    insert.bindValue(":assignee_id", assigneeId);
+    insert.bindValue(":watcher_id", watcherId);
+    insert.bindValue(":creator_id", userId);
+    insert.bindValue(":start_date", startDate);
+    insert.bindValue(":attachment", attachedFilePath);
 
     if (!insert.exec()) {
         showError("Ошибка добавления тикета: " + insert.lastError().text());

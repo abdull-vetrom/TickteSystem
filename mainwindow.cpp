@@ -5,11 +5,11 @@
 #include "myprojectstab.h"
 #include "profiletab.h"
 
-MainWindow::MainWindow(int userId, const QString& fullName, const QString& role, QWidget *parent)
+MainWindow::MainWindow(int userId, const QString& name, const QString& role, QWidget *parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
     currentUserId(userId),
-    currentUserName(fullName),
+    currentUserName(name),
     currentUserRole(role)
 {
     ui->setupUi(this);
@@ -22,11 +22,12 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::setupTabs() {
-    ui->tabWidget->addTab(new MyTicketsTab(currentUserId, currentUserRole), "Мои тикеты");
 
+    ui->tabWidget->addTab(new MyTicketsTab(currentUserId, currentUserRole), "Мои тикеты");
     if (currentUserRole == "начальник" || currentUserRole == "работник") {
         ui->tabWidget->addTab(new MyProjectsTab(currentUserId, currentUserRole), "Мои проекты");
     }
 
     ui->tabWidget->addTab(new ProfileTab(currentUserId), "Мой профиль");
+
 }

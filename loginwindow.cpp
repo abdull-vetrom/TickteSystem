@@ -2,10 +2,11 @@
 #include "ui_loginwindow.h"
 #include "mainwindow.h"
 #include "dbmanager.h"
-
+#include "utils.h"
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlError>
 #include <QMessageBox>
+#include <QFile>
 
 LoginWindow::LoginWindow(QWidget *parent) :
     QDialog(parent),
@@ -30,7 +31,9 @@ void LoginWindow::on_loginButton_clicked() {
 
 void LoginWindow::attemptLogin(const QString& email, const QString& password) {
     QSqlQuery query;
-    query.prepare("SELECT id, first_name, role FROM users WHERE email = :email AND password = :password");
+
+    QString sql = loadSqlQuery(":/sql/getUserLoginInfo.sql");
+    query.prepare(sql);
     query.bindValue(":email", email);
     query.bindValue(":password", password);
 
@@ -39,9 +42,9 @@ void LoginWindow::attemptLogin(const QString& email, const QString& password) {
         QString name = query.value(1).toString();
         QString role = query.value(2).toString();
 
-        MainWindow *mainWindow = new MainWindow(userId, name, role);
+        MainWindow *mainWindow = new MainWindow(userId, name, role, this);
         mainWindow->show();
-        this->close();
+        this->hide();
     } else {
         QMessageBox::warning(this, "Ошибка", "Неверный email или пароль.");
     }
