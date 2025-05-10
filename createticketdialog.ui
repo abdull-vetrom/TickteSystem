@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CreateTicketDialog</class>
+ <widget class="QDialog" name="CreateTicketDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Создать тикет</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="labelProject">
+     <property name="text">
+      <string>Проект *</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QComboBox" name="projectCombo"/>
+   </item>
+
+   <item row="1" column="0">
+    <widget class="QLabel" name="labelTracker">
+     <property name="text">
+      <string>Трекер *</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QComboBox" name="trackerCombo"/>
+   </item>
+
+   <item row="2" column="0">
+    <widget class="QLabel" name="labelTitle">
+     <property name="text">
+      <string>Название *</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="titleEdit"/>
+   </item>
+
+   <item row="3" column="0">
+    <widget class="QLabel" name="labelStatus">
+     <property name="text">
+      <string>Статус *</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QComboBox" name="statusCombo"/>
+   </item>
+
+   <item row="4" column="0">
+    <widget class="QLabel" name="labelPriority">
+     <property name="text">
+      <string>Приоритет *</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QComboBox" name="priorityCombo"/>
+   </item>
+
+   <item row="5" column="0">
+    <widget class="QLabel" name="labelAssignee">
+     <property name="text">
+      <string>Назначена *</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QComboBox" name="assigneeCombo"/>
+   </item>
+
+   <item row="6" column="0">
+    <widget class="QLabel" name="labelWatcher">
+     <property name="text">
+      <string>Наблюдатель *</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QComboBox" name="watcherCombo"/>
+   </item>
+
+   <item row="7" column="0">
+    <widget class="QLabel" name="labelDescription">
+     <property name="text">
+      <string>Описание</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QTextEdit" name="descriptionEdit"/>
+   </item>
+
+   <item row="8" column="0">
+    <widget class="QLabel" name="labelStartDate">
+     <property name="text">
+      <string>Дата начала</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QDateEdit" name="startDateEdit">
+     <property name="calendarPopup">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+
+   <item row="9" column="0" colspan="2">
+    <widget class="QPushButton" name="attachButton">
+     <property name="text">
+      <string>Прикрепить файл</string>
+     </property>
+    </widget>
+   </item>
+
+   <item row="10" column="0">
+    <widget class="QPushButton" name="confirmButton">
+     <property name="text">
+      <string>Подтвердить</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="1">
+    <widget class="QPushButton" name="cancelButton">
+     <property name="text">
+      <string>Отменить</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

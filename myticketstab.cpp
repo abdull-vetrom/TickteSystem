@@ -1,4 +1,5 @@
 #include "myticketstab.h"
+#include "createticketdialog.h"
 #include <QHeaderView>
 #include <QVBoxLayout>
 #include <QtSql/QSqlQuery>
@@ -8,6 +9,7 @@
 #include <QPushButton>
 #include <QTableView>
 #include <QMessageBox>
+#include <QDialog>
 
 
 MyTicketsTab::MyTicketsTab(int userId, const QString& role_, QWidget* parent)
@@ -27,10 +29,11 @@ MyTicketsTab::MyTicketsTab(int userId, const QString& role_, QWidget* parent)
 }
 
 void MyTicketsTab::onCreateTicketClicked() {
-    // Здесь можно открыть новое окно для создания тикета
-    QMessageBox::information(this, "Создание тикета", "Окно создания тикета ещё не реализовано.");
+    CreateTicketDialog *dialog = new CreateTicketDialog(userId, this);
+    connect(dialog, &CreateTicketDialog::ticketCreated, this, &MyTicketsTab::loadTickets);
+    dialog->exec();
+    delete dialog;
 }
-
 
 
 void MyTicketsTab::loadTickets() {
