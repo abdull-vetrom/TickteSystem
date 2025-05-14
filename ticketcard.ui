@@ -23,45 +23,31 @@
       <string>Информация</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="labelStatus">
-        <property name="text">
-         <string>Статус</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="statusCombo"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelPriority">
-        <property name="text">
-         <string>Приоритет</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="priorityCombo"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="labelAssigned">
-        <property name="text">
-         <string>Назначена</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="assignedEdit"/>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="labelObserver">
-        <property name="text">
-         <string>Наблюдатель</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="observerEdit"/>
+      <item row="0" column="0"><widget class="QLabel"><property name="text"><string>Проект</string></property></widget></item>
+      <item row="0" column="1"><widget class="QLabel" name="labelProjectValue"/></item>
+      <item row="1" column="0"><widget class="QLabel"><property name="text"><string>Трекер</string></property></widget></item>
+      <item row="1" column="1"><widget class="QLabel" name="labelTrackerValue"/></item>
+      <item row="2" column="0"><widget class="QLabel"><property name="text"><string>Название</string></property></widget></item>
+      <item row="2" column="1"><widget class="QLabel" name="labelTitleValue"/></item>
+      <item row="3" column="0"><widget class="QLabel"><property name="text"><string>Статус</string></property></widget></item>
+      <item row="3" column="1"><widget class="QLabel" name="labelStatusValue"/></item>
+      <item row="4" column="0"><widget class="QLabel"><property name="text"><string>Приоритет</string></property></widget></item>
+      <item row="4" column="1"><widget class="QLabel" name="labelPriorityValue"/></item>
+      <item row="5" column="0"><widget class="QLabel"><property name="text"><string>Назначена</string></property></widget></item>
+      <item row="5" column="1"><widget class="QLabel" name="labelAssignedValue"/></item>
+      <item row="6" column="0"><widget class="QLabel"><property name="text"><string>Наблюдатель</string></property></widget></item>
+      <item row="6" column="1"><widget class="QLabel" name="labelObserverValue"/></item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="filesBox">
+     <property name="title">
+      <string>Файлы</string>
+     </property>
+     <layout class="QVBoxLayout" name="filesLayout">
+      <item>
+       <widget class="QListWidget" name="fileList"/>
       </item>
      </layout>
     </widget>

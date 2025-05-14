@@ -1,6 +1,8 @@
 #include "myticketstab.h"
 #include "createticketdialog.h"
 #include "utils.h"
+#include "ticketcard.h"
+
 #include <QHeaderView>
 #include <QVBoxLayout>
 #include <QtSql/QSqlQuery>
@@ -16,22 +18,22 @@
 MyTicketsTab::MyTicketsTab(int userId, const QString& role_, QWidget* parent)
     : QWidget(parent), userId(userId), role(role_) {
 
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    table = new QTableView(this);
-    layout->addWidget(table);
+    ui.setupUi(this);
 
     model = new QStandardItemModel(this);
     model->setHorizontalHeaderLabels({"Название", "Проект", "Приоритет", "Статус"});
-    table->setModel(model);
-    table->verticalHeader()->setVisible(false);
-    table->horizontalHeader()->setStretchLastSection(true);
-    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui.tableView->setModel(model);
+    ui.tableView->horizontalHeader()->setStretchLastSection(true);
+    ui.tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui.tableView->verticalHeader()->setVisible(false);
 
     if (role == "начальник") {
         createTicketButton = new QPushButton("Создать тикет", this);
-        layout->addWidget(createTicketButton);
+        layout()->addWidget(createTicketButton);
         connect(createTicketButton, &QPushButton::clicked, this, &MyTicketsTab::onCreateTicketClicked);
     }
+
+    connect(ui.tableView, &QTableView::clicked, this, &MyTicketsTab::onTicketClicked);
 
     loadTickets();
 }
@@ -58,12 +60,24 @@ void MyTicketsTab::loadTickets() {
     }
 
     while (query.next()) {
+        int ticketId = query.value(0).toInt(); // id
         QList<QStandardItem*> row;
-        for (int i = 0; i < 4; ++i) { // Только 4 поля
+        for (int i = 1; i <= 4; ++i) { // title, project, priority, status
             QStandardItem* item = new QStandardItem(query.value(i).toString());
             item->setEditable(false);
+            if (i == 1) // title — храним id
+                item->setData(ticketId, Qt::UserRole);
             row.append(item);
         }
         model->appendRow(row);
     }
+}
+
+void MyTicketsTab::onTicketClicked(const QModelIndex& index) {
+    if (index.column() != 0) return;
+
+    int ticketId = model->itemFromIndex(index)->data(Qt::UserRole).toInt();
+    TicketCard* dialog = new TicketCard(ticketId, this);
+    dialog->exec();
+    delete dialog;
 }
