@@ -37,6 +37,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         createticketdialog.ui
         utils.h utils.cpp
         resources.qrc
+        tickettable.ui
+        ticketcard.h ticketcard.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET TicketSystem APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

@@ -2,22 +2,25 @@
 #define TICKET_H
 
 #include <QString>
-#include <QDateTime>
+#include <QStringList>
 
-struct Ticket {
+class Ticket {
+public:
+    Ticket();
+
+    bool load(int id);  // Загрузка тикета по ID из БД
+
     int id;
     QString title;
     QString description;
-    QString senderEmail;
+    QString project;
     QString tracker;
     QString status;
-    QString project;
-    QString assignedTo;
-    QString observer;
     QString priority;
-    QDateTime createdAt;
-
-    Ticket();
+    QString assignee;
+    QString watcher;
+    QStringList attachments;
+    QString createdAt;
 };
 
 #endif // TICKET_H
