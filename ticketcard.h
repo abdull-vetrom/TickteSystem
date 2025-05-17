@@ -1,11 +1,11 @@
 #ifndef TICKETCARD_H
 #define TICKETCARD_H
 
-#include <QDialog>
+#include <QWidget>
 #include "ui_ticketcard.h"
 #include "ticket.h"
 
-class TicketCard : public QDialog {
+class TicketCard : public QWidget {
     Q_OBJECT
 
 public:
@@ -13,6 +13,9 @@ public:
 
 private:
     Ui::TicketCard ui;
+
+private slots:
+    void onEditClicked();
 };
 
 #endif // TICKETCARD_H

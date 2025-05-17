@@ -77,7 +77,7 @@ void MyTicketsTab::onTicketClicked(const QModelIndex& index) {
     if (index.column() != 0) return;
 
     int ticketId = model->itemFromIndex(index)->data(Qt::UserRole).toInt();
-    TicketCard* dialog = new TicketCard(ticketId, this);
-    dialog->exec();
-    delete dialog;
+    TicketCard* window = new TicketCard(ticketId);
+    window->setAttribute(Qt::WA_DeleteOnClose);  // удалить при закрытии
+    window->showMaximized();
 }
