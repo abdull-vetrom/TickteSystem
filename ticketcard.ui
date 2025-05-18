@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>TicketCard</class>
  <widget class="QWidget" name="TicketCard">
@@ -16,7 +16,7 @@
      </property>
     </widget>
    </item>
-   <item>
+   <item><widget class="QPushButton" name="editButton"><property name="text"><string>Редактировать</string></property></widget></item><item>
     <widget class="QTextEdit" name="ticketDescription">
      <property name="readOnly">
       <bool>true</bool>
@@ -33,17 +33,17 @@
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0"><widget class="QLabel"><property name="text"><string>Проект</string></property></widget></item>
-      <item row="0" column="1"><widget class="QLabel" name="labelProjectValue"/></item>
+      <item row="0" column="1"><widget class="QLabel" name="labelProjectValue" /></item>
       <item row="1" column="0"><widget class="QLabel"><property name="text"><string>Трекер</string></property></widget></item>
-      <item row="1" column="1"><widget class="QLabel" name="labelTrackerValue"/></item>
+      <item row="1" column="1"><widget class="QLabel" name="labelTrackerValue" /></item>
       <item row="2" column="0"><widget class="QLabel"><property name="text"><string>Статус</string></property></widget></item>
-      <item row="2" column="1"><widget class="QLabel" name="labelStatusValue"/></item>
+      <item row="2" column="1"><widget class="QLabel" name="labelStatusValue" /></item>
       <item row="3" column="0"><widget class="QLabel"><property name="text"><string>Приоритет</string></property></widget></item>
-      <item row="3" column="1"><widget class="QLabel" name="labelPriorityValue"/></item>
+      <item row="3" column="1"><widget class="QLabel" name="labelPriorityValue" /></item>
       <item row="4" column="0"><widget class="QLabel"><property name="text"><string>Назначена</string></property></widget></item>
-      <item row="4" column="1"><widget class="QLabel" name="labelAssignedValue"/></item>
+      <item row="4" column="1"><widget class="QLabel" name="labelAssignedValue" /></item>
       <item row="5" column="0"><widget class="QLabel"><property name="text"><string>Наблюдатель</string></property></widget></item>
-      <item row="5" column="1"><widget class="QLabel" name="labelObserverValue"/></item>
+      <item row="5" column="1"><widget class="QLabel" name="labelObserverValue" /></item>
      </layout>
     </widget>
    </item>
@@ -53,7 +53,7 @@
       <string>Файлы</string>
      </property>
      <layout class="QVBoxLayout" name="filesLayout">
-      <item><widget class="QListWidget" name="fileList"/></item>
+      <item><widget class="QListWidget" name="fileList" /></item>
      </layout>
     </widget>
    </item>
@@ -69,18 +69,11 @@
          <bool>true</bool>
         </property>
         <widget class="QWidget" name="historyScrollContents">
-         <layout class="QVBoxLayout" name="historyLayout"/>
+         <layout class="QVBoxLayout" name="historyLayout" />
         </widget>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="editButton">
-        <property name="text">
-         <string>Редактировать</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+      </layout>
     </widget>
    </item>
    <item>
@@ -90,17 +83,17 @@
      </property>
      <layout class="QFormLayout" name="editFormLayout">
       <item row="0" column="0"><widget class="QLabel"><property name="text"><string>Статус</string></property></widget></item>
-      <item row="0" column="1"><widget class="QComboBox" name="editStatus"/></item>
+      <item row="0" column="1"><widget class="QComboBox" name="editStatus" /></item>
       <item row="1" column="0"><widget class="QLabel"><property name="text"><string>Приоритет</string></property></widget></item>
-      <item row="1" column="1"><widget class="QComboBox" name="editPriority"/></item>
+      <item row="1" column="1"><widget class="QComboBox" name="editPriority" /></item>
       <item row="2" column="0"><widget class="QLabel"><property name="text"><string>Назначена</string></property></widget></item>
-      <item row="2" column="1"><widget class="QComboBox" name="editAssignee"/></item>
+      <item row="2" column="1"><widget class="QComboBox" name="editAssignee" /></item>
       <item row="3" column="0"><widget class="QLabel"><property name="text"><string>Наблюдатель</string></property></widget></item>
-      <item row="3" column="1"><widget class="QComboBox" name="editWatcher"/></item>
+      <item row="3" column="1"><widget class="QComboBox" name="editWatcher" /></item>
       <item row="4" column="0"><widget class="QLabel"><property name="text"><string>Трекер</string></property></widget></item>
-      <item row="4" column="1"><widget class="QComboBox" name="editTracker"/></item>
+      <item row="4" column="1"><widget class="QComboBox" name="editTracker" /></item>
       <item row="5" column="0"><widget class="QLabel"><property name="text"><string>Название</string></property></widget></item>
-      <item row="5" column="1"><widget class="QLineEdit" name="editTitle"/></item>
+      <item row="5" column="1"><widget class="QLineEdit" name="editTitle" /></item>
      </layout>
     </widget>
    </item>
@@ -118,8 +111,8 @@
      </property>
     </widget>
    </item>
-  </layout>
+  <item><widget class="QPushButton" name="backButton"><property name="text"><string>Назад</string></property></widget></item></layout>
  </widget>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

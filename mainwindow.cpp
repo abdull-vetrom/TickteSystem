@@ -23,7 +23,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::setupTabs() {
 
-    ui->tabWidget->addTab(new MyTicketsTab(currentUserId, currentUserRole), "Мои тикеты");
+    ui->tabWidget->addTab(new MyTicketsTab(currentUserId, currentUserRole, ui->tabWidget, this), "Мои тикеты");
     if (currentUserRole == "начальник" || currentUserRole == "работник") {
         ui->tabWidget->addTab(new MyProjectsTab(currentUserId, currentUserRole), "Мои проекты");
     }

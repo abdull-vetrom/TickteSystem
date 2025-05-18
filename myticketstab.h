@@ -5,13 +5,14 @@
 #include <QStandardItemModel>
 #include <QString>
 #include <QPushButton>
+#include <QTabWidget>
 
-#include "ui_tickettable.h"  // подключение UI, сгенерированного из tickettable.ui
+#include "ui_tickettable.h"
 
 class MyTicketsTab : public QWidget {
     Q_OBJECT
 public:
-    MyTicketsTab(int userId, const QString& role_, QWidget* parent = nullptr);
+    MyTicketsTab(int userId, const QString& role_, QTabWidget* tabWidget, QWidget* parent = nullptr);
 
 private slots:
     void onCreateTicketClicked();
@@ -22,8 +23,9 @@ private:
     QString userRole;
     QString role;
     QStandardItemModel* model;
+    QTabWidget* tabWidget;
 
-    Ui::TicketTableForm ui;  // объект для доступа к элементам из .ui-файла
+    Ui::TicketTableForm ui;
     QPushButton* createTicketButton;
     void loadTickets();
 };

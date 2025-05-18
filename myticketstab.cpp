@@ -15,8 +15,8 @@
 #include <QDialog>
 #include <QStandardItemModel>
 
-MyTicketsTab::MyTicketsTab(int userId, const QString& role_, QWidget* parent)
-    : QWidget(parent), userId(userId), role(role_) {
+MyTicketsTab::MyTicketsTab(int userId, const QString& role_, QTabWidget* tabWidget, QWidget* parent)
+    : QWidget(parent), userId(userId), role(role_), tabWidget(tabWidget) {
 
     ui.setupUi(this);
 
@@ -45,6 +45,20 @@ void MyTicketsTab::onCreateTicketClicked() {
     delete dialog;
 }
 
+void MyTicketsTab::onTicketClicked(const QModelIndex& index) {
+    if (!index.isValid())
+        return;
+
+    int row = index.row();
+    int ticketId = model->item(row, 0)->data(Qt::UserRole).toInt();
+
+    TicketCard* window = new TicketCard(ticketId, tabWidget, this);
+    tabWidget->addTab(window, "Просмотр тикета");
+    tabWidget->setCurrentWidget(window);
+    connect(window, &TicketCard::ticketUpdated, this, &MyTicketsTab::loadTickets);
+
+}
+
 void MyTicketsTab::loadTickets() {
     model->removeRows(0, model->rowCount());
 
@@ -60,24 +74,13 @@ void MyTicketsTab::loadTickets() {
     }
 
     while (query.next()) {
-        int ticketId = query.value(0).toInt(); // id
+        int ticketId = query.value(0).toInt();
         QList<QStandardItem*> row;
-        for (int i = 1; i <= 4; ++i) { // title, project, priority, status
+        for (int i = 1; i <= 4; ++i) {
             QStandardItem* item = new QStandardItem(query.value(i).toString());
-            item->setEditable(false);
-            if (i == 1) // title — храним id
-                item->setData(ticketId, Qt::UserRole);
+            if (i == 1) item->setData(ticketId, Qt::UserRole);  // сохраним ticketId
             row.append(item);
         }
         model->appendRow(row);
     }
-}
-
-void MyTicketsTab::onTicketClicked(const QModelIndex& index) {
-    if (index.column() != 0) return;
-
-    int ticketId = model->itemFromIndex(index)->data(Qt::UserRole).toInt();
-    TicketCard* window = new TicketCard(ticketId);
-    window->setAttribute(Qt::WA_DeleteOnClose);  // удалить при закрытии
-    window->showMaximized();
 }
