@@ -3,8 +3,6 @@
 
 #include <QDialog>
 #include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QFileDialog>
 
 namespace Ui {
 class CreateTicketDialog;
@@ -23,8 +21,8 @@ signals:
 
 private slots:
     void on_confirmButton_clicked();
-    void on_cancelButton_clicked();
-    void on_attachButton_clicked();
+    void on_cancelBtn_clicked();
+    void on_attachBtn_clicked();
     void updateWatchersByProject();
 
 private:

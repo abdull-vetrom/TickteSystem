@@ -22,7 +22,7 @@ void CreateProjectDialog::on_saveButton_clicked() {
         return;
     }
 
-    int departmentId = 1;  // пока жёстко задаём, позже можно выбрать из выпадающего списка
+    int departmentId = 1;  // временно жёстко задано, потом можно сделать ComboBox
 
     QSqlQuery query;
     query.prepare("INSERT INTO projects (name, department_id) VALUES (:name, :department_id)");
@@ -36,4 +36,3 @@ void CreateProjectDialog::on_saveButton_clicked() {
 
     accept();
 }
-
