@@ -1,6 +1,6 @@
 UPDATE
     users
 SET
-    photo_path = :PATH
+    photo_path = :path
 WHERE
     id = :id

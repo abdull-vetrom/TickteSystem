@@ -1,7 +1,7 @@
 SELECT
-	id,
-	full_name
+    id,
+    full_name
 FROM
-	users
+    users
 WHERE
-	department_id = :departmentId
+    department_id = :departmentId
