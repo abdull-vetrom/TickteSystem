@@ -64,14 +64,20 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_historyGroup">
       <item>
-       <widget class="QScrollArea" name="historyScrollArea">
-        <property name="widgetResizable">
-         <bool>true</bool>
+      <widget class="QScrollArea" name="historyScrollArea">
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="historyScrollContents">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
         </property>
-        <widget class="QWidget" name="historyScrollContents">
-         <layout class="QVBoxLayout" name="historyLayout" />
-        </widget>
+        <layout class="QVBoxLayout" name="historyLayout" />
        </widget>
+      </widget>
       </item>
       </layout>
     </widget>
@@ -98,17 +104,24 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="commentEdit">
-     <property name="placeholderText">
-      <string>Комментарий редактирования</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="saveButton">
-     <property name="text">
-      <string>Сохранить</string>
-     </property>
+    <widget class="QWidget" name="editFooterPanel">
+     <property name="visible"><bool>false</bool></property>
+     <layout class="QVBoxLayout">
+      <item>
+       <widget class="QLineEdit" name="commentEdit">
+        <property name="placeholderText">
+         <string>Комментарий редактирования</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="saveButton">
+        <property name="text">
+         <string>Сохранить</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   <item><widget class="QPushButton" name="backButton"><property name="text"><string>Назад</string></property></widget></item></layout>

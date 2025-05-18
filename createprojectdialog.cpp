@@ -22,7 +22,7 @@ void CreateProjectDialog::on_saveButton_clicked() {
         return;
     }
 
-    int departmentId = 1;  // временно жёстко задано, потом можно сделать ComboBox
+    int departmentId = 1;  // временно жёстко задано
 
     QSqlQuery query;
     query.prepare("INSERT INTO projects (name, department_id) VALUES (:name, :department_id)");
@@ -30,9 +30,17 @@ void CreateProjectDialog::on_saveButton_clicked() {
     query.bindValue(":department_id", departmentId);
 
     if (!query.exec()) {
-        QMessageBox::critical(this, "Ошибка", "Не удалось сохранить проект:\n" + query.lastError().text());
+        QString error = query.lastError().text();
+        if (error.contains("Duplicate entry") && error.contains("projects.name")) {
+            QMessageBox::warning(this, "Проект уже существует",
+                                 "Проект с таким названием уже существует.\nПожалуйста, выберите другое имя.");
+        } else {
+            QMessageBox::critical(this, "Ошибка",
+                                  "Не удалось сохранить проект:\n" + error);
+        }
         return;
     }
 
     accept();
 }
+

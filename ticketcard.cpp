@@ -1,14 +1,17 @@
 #include "ticketcard.h"
 #include "ticket.h"
+#include "utils.h"
 #include <QListWidgetItem>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
+#include <QDateTime>
+#include <QScrollBar>
 
-TicketCard::TicketCard(int ticketId, QTabWidget* tabWidget, QWidget* parent)
-    : QWidget(parent), ticketId(ticketId), tabWidget(tabWidget) {
+TicketCard::TicketCard(int ticketId, int userId, QTabWidget* tabWidget, QWidget* parent)
+    : QWidget(parent), ticketId(ticketId), userId(userId), tabWidget(tabWidget) {
     ui.setupUi(this);
-
+    ui.historyScrollArea->setWidget(ui.historyScrollContents);
     if (!ticket.load(ticketId)) {
         close();
         return;
@@ -55,84 +58,224 @@ TicketCard::TicketCard(int ticketId, QTabWidget* tabWidget, QWidget* parent)
     ui.filesBox->setMaximumHeight(totalHeight);
 
     ui.editPanel->setVisible(false);
+    ui.editFooterPanel->setVisible(false);
+
+    loadHistory();
 }
 
 void TicketCard::onEditClicked() {
     bool isVisible = ui.editPanel->isVisible();
     ui.editPanel->setVisible(!isVisible);
+    ui.editFooterPanel->setVisible(!isVisible);
 
     if (!isVisible) {
         ui.editTitle->setText(ticket.title);
 
-        QSqlQuery queryStatus("SELECT name FROM statuses");
+        QString sql;
+
+        // Статусы
+        sql = loadSqlQuery(":/sql/getStatusesIdAndName.sql");
+        QSqlQuery queryStatus(sql);
         ui.editStatus->clear();
+        statusMap.clear();
         while (queryStatus.next()) {
-            ui.editStatus->addItem(queryStatus.value(0).toString());
+            int id = queryStatus.value("id").toInt();
+            QString name = queryStatus.value("name").toString();
+            ui.editStatus->addItem(name);
+            statusMap[name] = id;
         }
         ui.editStatus->setCurrentText(ticket.status);
 
-        QSqlQuery queryPriority("SELECT name FROM priorities");
+        // Приоритеты
+        sql = loadSqlQuery(":/sql/getPrioritiesIdAndName.sql");
+        QSqlQuery queryPriority(sql);
         ui.editPriority->clear();
+        priorityMap.clear();
         while (queryPriority.next()) {
-            ui.editPriority->addItem(queryPriority.value(0).toString());
+            int id = queryPriority.value("id").toInt();
+            QString name = queryPriority.value("name").toString();
+            ui.editPriority->addItem(name);
+            priorityMap[name] = id;
         }
         ui.editPriority->setCurrentText(ticket.priority);
 
-        QSqlQuery queryUsers("SELECT full_name FROM users");
+        // Пользователи (исполнители и наблюдатели)
+        sql = loadSqlQuery(":/sql/getUsersIdAndFullName.sql");
+        QSqlQuery queryUsers(sql);
         ui.editAssignee->clear();
+        ui.editWatcher->clear(); // Добавлено
+        userMap.clear();
         while (queryUsers.next()) {
-            ui.editAssignee->addItem(queryUsers.value(0).toString());
+            int id = queryUsers.value("id").toInt();
+            QString name = queryUsers.value("full_name").toString();
+            ui.editAssignee->addItem(name);
+            ui.editWatcher->addItem(name); // Добавлено
+            userMap[name] = id;
         }
         ui.editAssignee->setCurrentText(ticket.assignee);
+        ui.editWatcher->setCurrentText(ticket.watcher); // Добавлено
+
+        // Трекеры
+        sql = loadSqlQuery(":/sql/getTrackersIdAndName.sql");
+        QSqlQuery queryTrackers(sql);
+        ui.editTracker->clear();
+        trackerMap.clear();
+        while (queryTrackers.next()) {
+            int id = queryTrackers.value("id").toInt();
+            QString name = queryTrackers.value("name").toString();
+            ui.editTracker->addItem(name);
+            trackerMap[name] = id;
+        }
+        ui.editTracker->setCurrentText(ticket.tracker); // Добавлено
     }
 }
+
 
 void TicketCard::onSaveClicked() {
     QString newTitle = ui.editTitle->text();
     QString newStatus = ui.editStatus->currentText();
     QString newPriority = ui.editPriority->currentText();
     QString newAssignee = ui.editAssignee->currentText();
+    QString newWatcher = ui.editWatcher->currentText();
+    QString newTracker = ui.editTracker->currentText();
+    QString comment = ui.commentEdit->text().trimmed();
 
-    QSqlQuery statusQuery;
-    statusQuery.prepare("SELECT id FROM statuses WHERE name = ?");
-    statusQuery.addBindValue(newStatus);
-    statusQuery.exec();
-    int statusId = statusQuery.next() ? statusQuery.value(0).toInt() : -1;
+    int statusId = statusMap.value(newStatus, -1);
+    int priorityId = priorityMap.value(newPriority, -1);
+    int assigneeId = userMap.value(newAssignee, -1);
+    int watcherId = userMap.value(newWatcher, -1);
+    int trackerId = trackerMap.value(newTracker, -1);
 
-    QSqlQuery priorityQuery;
-    priorityQuery.prepare("SELECT id FROM priorities WHERE name = ?");
-    priorityQuery.addBindValue(newPriority);
-    priorityQuery.exec();
-    int priorityId = priorityQuery.next() ? priorityQuery.value(0).toInt() : -1;
-
-    QSqlQuery userQuery;
-    userQuery.prepare("SELECT id FROM users WHERE full_name = ?");
-    userQuery.addBindValue(newAssignee);
-    userQuery.exec();
-    int assigneeId = userQuery.next() ? userQuery.value(0).toInt() : -1;
-
+    QString sql = loadSqlQuery(":/sql/updateTicketInfo.sql");
     QSqlQuery updateQuery;
-    updateQuery.prepare("UPDATE tickets SET title = ?, status_id = ?, priority_id = ?, assignee_id = ? WHERE id = ?");
-    updateQuery.addBindValue(newTitle);
-    updateQuery.addBindValue(statusId);
-    updateQuery.addBindValue(priorityId);
-    updateQuery.addBindValue(assigneeId);
-    updateQuery.addBindValue(ticketId);
+    updateQuery.prepare(sql);
+    updateQuery.bindValue(":title", newTitle);
+    updateQuery.bindValue(":statusId", statusId);
+    updateQuery.bindValue(":priorityId", priorityId);
+    updateQuery.bindValue(":assigneeId", assigneeId);
+    updateQuery.bindValue(":watcherId", watcherId);
+    updateQuery.bindValue(":trackerId", trackerId);
+    updateQuery.bindValue(":ticketId", ticketId);
 
     if (!updateQuery.exec()) {
         qDebug() << "Ошибка обновления тикета:" << updateQuery.lastError().text();
-    } else {
-        qDebug() << "Тикет успешно обновлён.";
-        emit ticketUpdated();  // <--- отправляем сигнал
-        ui.editPanel->setVisible(false);
+        return;
     }
+
+    // Формирование изменений
+    QStringList changes;
+
+    auto track = [&](const QString& field, const QString& oldVal, const QString& newVal) {
+        if (oldVal != newVal) {
+            changes << QString("Параметр <b>%1</b> изменился с <i>%2</i> на <b>%3</b>")
+                           .arg(field, oldVal, newVal);
+        }
+    };
+
+    track("Название", ticket.title, newTitle);
+    track("Статус", ticket.status, newStatus);
+    track("Приоритет", ticket.priority, newPriority);
+    track("Назначена", ticket.assignee, newAssignee);
+    track("Наблюдатель", ticket.watcher, newWatcher);
+    track("Трекер", ticket.tracker, newTracker);
+
+    if (!changes.isEmpty() || !comment.isEmpty()) {
+        QString historySql = loadSqlQuery(":/sql/saveTicketHistory.sql");
+        QSqlQuery historyQuery;
+        historyQuery.prepare(historySql);
+        historyQuery.bindValue(":ticketId", ticketId);
+        historyQuery.bindValue(":userId", userId);
+        historyQuery.bindValue(":summary", changes.join("<br>"));
+        historyQuery.bindValue(":comment", comment);
+        historyQuery.bindValue(":changedAt", QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss"));
+
+        if (!historyQuery.exec()) {
+            qDebug() << "Ошибка записи единой истории:" << historyQuery.lastError().text();
+        }
+    }
+
+    // Обновление UI
+    ui.labelStatusValue->setText(newStatus);
+    ui.labelPriorityValue->setText(newPriority);
+    ui.labelAssignedValue->setText(newAssignee);
+    ui.labelObserverValue->setText(newWatcher);
+    ui.labelTrackerValue->setText(newTracker);
+
+    QString updatedTitle = QString("№%1  <b>%2</b>  (<i>%3</i>)")
+                               .arg(ticket.id)
+                               .arg(newTitle)
+                               .arg(newTracker);
+    ui.ticketTitleLabel->setText(updatedTitle);
+
+    ticket.title = newTitle;
+    ticket.status = newStatus;
+    ticket.priority = newPriority;
+    ticket.assignee = newAssignee;
+    ticket.watcher = newWatcher;
+    ticket.tracker = newTracker;
+
+    ui.editPanel->setVisible(false);
+    ui.editFooterPanel->setVisible(false);
+    ui.commentEdit->clear();
+
+    emit ticketUpdated();
+    loadHistory();
+}
+
+void TicketCard::loadHistory() {
+    QString sql = loadSqlQuery(":/sql/getTicketHistoryByTicketId.sql");
+    QSqlQuery query;
+    query.prepare(sql);
+    query.bindValue(":ticketId", ticketId);
+    if (!query.exec()) {
+        qDebug() << "Ошибка истории:" << query.lastError().text();
+        return;
+    }
+
+    // Очистка предыдущих виджетов истории
+    QLayoutItem* child;
+    while ((child = ui.historyLayout->takeAt(0)) != nullptr) {
+        delete child->widget();
+        delete child;
+    }
+
+    // Загрузка истории
+    while (query.next()) {
+        QString user = query.value("user").toString();
+        QString timestamp = query.value("changed_at").toString();
+        QString changesSummary = query.value("changes_summary").toString();
+        QString comment = query.value("comment").toString();
+
+        QString html = QString("<b>%1</b> (%2):<br>%3").arg(user, timestamp, changesSummary);
+        if (!comment.isEmpty()) {
+            html += QString("<br><i>%1</i>").arg(comment);
+        }
+
+        QLabel* label = new QLabel(html);
+        label->setWordWrap(true);
+        label->setTextFormat(Qt::RichText);
+        ui.historyLayout->addWidget(label);
+    }
+
+    ui.historyScrollArea->setWidget(ui.historyScrollContents);
+
+    if (QScrollBar* bar = ui.historyScrollArea->verticalScrollBar())
+        bar->setValue(bar->maximum());
 }
 
 void TicketCard::onBackClicked() {
-    emit ticketUpdated();  // <--- отправляем сигнал перед выходом
+    emit ticketUpdated();
+
     if (tabWidget) {
         int index = tabWidget->indexOf(this);
         if (index != -1)
             tabWidget->removeTab(index);
+
+        for (int i = 0; i < tabWidget->count(); ++i) {
+            if (tabWidget->tabText(i) == "Мои тикеты") {
+                tabWidget->setCurrentIndex(i);
+                break;
+            }
+        }
     }
 }

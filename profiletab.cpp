@@ -59,12 +59,8 @@ ProfileTab::ProfileTab(int userId, QWidget *parent)
 
 void ProfileTab::loadProfile() {
     QSqlQuery query;
-    query.prepare(R"(
-        SELECT first_name, middle_name, last_name, email, role, d.name AS department, photo_path
-        FROM users u
-        JOIN departments d ON u.department_id = d.id
-        WHERE u.id = :id
-    )");
+    QString sql = loadSqlQuery(":/sql/getUserProfileInfo.sql");
+    query.prepare(sql);
     query.bindValue(":id", userId);
 
     if (query.exec() && query.next()) {
@@ -103,7 +99,8 @@ void ProfileTab::onUploadPhotoClicked() {
     QFile::copy(fileName, newFilePath);
 
     QSqlQuery query;
-    query.prepare("UPDATE users SET photo_path = :path WHERE id = :id");
+    QString sql = loadSqlQuery(":/sql/updateUserProfilePhoto.sql");
+    query.prepare(sql);
     query.bindValue(":path", newFilePath);
     query.bindValue(":id", userId);
 
