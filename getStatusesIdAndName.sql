@@ -1,4 +1,5 @@
 SELECT
+    id,
     name
 FROM
-    projects
+    statuses

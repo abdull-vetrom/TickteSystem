@@ -52,7 +52,7 @@ void MyTicketsTab::onTicketClicked(const QModelIndex& index) {
     int row = index.row();
     int ticketId = model->item(row, 0)->data(Qt::UserRole).toInt();
 
-    TicketCard* window = new TicketCard(ticketId, tabWidget, this);
+    TicketCard* window = new TicketCard(ticketId, userId, tabWidget, this);
     tabWidget->addTab(window, "Просмотр тикета");
     tabWidget->setCurrentWidget(window);
     connect(window, &TicketCard::ticketUpdated, this, &MyTicketsTab::loadTickets);

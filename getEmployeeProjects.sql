@@ -1,8 +1,9 @@
 SELECT
-	DISTINCT p.name
+    id,
+    DISTINCT p.name
 FROM
-	tickets t
+    tickets t
 JOIN projects p ON
-	t.project_id = p.id
+    t.project_id = p.id
 WHERE
-	t.assignee_id = :userId
+    t.assignee_id = :userId

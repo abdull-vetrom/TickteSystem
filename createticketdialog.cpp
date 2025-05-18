@@ -1,16 +1,15 @@
 #include "createticketdialog.h"
 #include "ui_createticketdialog.h"
+#include "utils.h"
+
 #include <QMessageBox>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDateTime>
-#include <QVariantList>
+#include <QFileDialog>
 
-CreateTicketDialog::CreateTicketDialog(int currentUserId, QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::CreateTicketDialog),
-    userId(currentUserId)
-{
+CreateTicketDialog::CreateTicketDialog(int currentUserId, QWidget *parent)
+    : QDialog(parent), ui(new Ui::CreateTicketDialog), userId(currentUserId) {
     ui->setupUi(this);
     db = QSqlDatabase::database();
     ui->startDateEdit->setDate(QDate::currentDate());
@@ -19,118 +18,77 @@ CreateTicketDialog::CreateTicketDialog(int currentUserId, QWidget *parent) :
     connect(ui->projectCombo, &QComboBox::currentTextChanged, this, &CreateTicketDialog::updateWatchersByProject);
 }
 
-CreateTicketDialog::~CreateTicketDialog()
-{
+CreateTicketDialog::~CreateTicketDialog() {
     delete ui;
 }
 
-void CreateTicketDialog::populateCombos()
-{
+void CreateTicketDialog::populateCombos() {
     QSqlQuery query;
+    QString sql;
 
-    query.exec("SELECT id, name FROM projects");
+    sql = loadSqlQuery(":/sql/getProjectsIdAndName.sql");
+    query.exec(sql);
     while (query.next()) {
-        ui->projectCombo->addItem(query.value(1).toString(), query.value(0));
+        ui->projectCombo->addItem(query.value("name").toString(), query.value("id"));
     }
 
-    query.exec("SELECT id, name FROM trackers");
+    sql = loadSqlQuery(":/sql/getTrackersIdAndName.sql");
+    query.exec(sql);
     while (query.next()) {
-        ui->trackerCombo->addItem(query.value(1).toString(), query.value(0));
+        ui->trackerCombo->addItem(query.value("name").toString(), query.value("id"));
     }
 
-    query.exec("SELECT id, name FROM statuses");
+    sql = loadSqlQuery(":/sql/getStatusesIdAndName.sql");
+    query.exec(sql);
     while (query.next()) {
-        ui->statusCombo->addItem(query.value(1).toString(), query.value(0));
+        ui->statusCombo->addItem(query.value("name").toString(), query.value("id"));
     }
 
-    query.exec("SELECT id, name FROM priorities");
+    sql = loadSqlQuery(":/sql/getPrioritiesIdAndName.sql");
+    query.exec(sql);
     while (query.next()) {
-        ui->priorityCombo->addItem(query.value(1).toString(), query.value(0));
+        ui->priorityCombo->addItem(query.value("name").toString(), query.value("id"));
     }
 
     updateWatchersByProject();
 }
 
-void CreateTicketDialog::updateWatchersByProject()
-{
+void CreateTicketDialog::updateWatchersByProject() {
     ui->watcherCombo->clear();
     ui->assigneeCombo->clear();
 
     int projectId = ui->projectCombo->currentData().toInt();
     QSqlQuery query;
-    query.prepare("SELECT department_id FROM projects WHERE id = ?");
-    query.addBindValue(projectId);
 
+    QString sql = loadSqlQuery(":/sql/getDepartmentIdByProject.sql");
+    query.prepare(sql);
+    query.bindValue(":projectId", projectId);
     if (!query.exec() || !query.next()) {
         showError("Ошибка получения отдела проекта.");
         return;
     }
 
-    int deptId = query.value(0).toInt();
+    int deptId = query.value("department_id").toInt();
 
-    // Заполняем наблюдателей
-    query.prepare("SELECT id, full_name FROM users WHERE department_id = ?");
-    query.addBindValue(deptId);
+    sql = loadSqlQuery(":/sql/getUsersByDepartment.sql");
+    query.prepare(sql);
+    query.bindValue(":departmentId", deptId);
     if (query.exec()) {
         while (query.next()) {
-            ui->watcherCombo->addItem(query.value(1).toString(), query.value(0));
-        }
-    }
-
-    // Заполняем исполнителей
-    query.prepare("SELECT id, full_name FROM users WHERE department_id = ?");
-    query.addBindValue(deptId);
-    if (query.exec()) {
-        while (query.next()) {
-            ui->assigneeCombo->addItem(query.value(1).toString(), query.value(0));
+            QString name = query.value("full_name").toString();
+            int id = query.value("id").toInt();
+            ui->watcherCombo->addItem(name, id);
+            ui->assigneeCombo->addItem(name, id);
         }
     }
 }
 
-void CreateTicketDialog::on_confirmButton_clicked()
-{
+void CreateTicketDialog::on_confirmButton_clicked() {
     QString title = ui->titleEdit->text().trimmed();
     QString description = ui->descriptionEdit->toPlainText();
-    int projectIndex = ui->projectCombo->currentIndex();
-    int trackerIndex = ui->trackerCombo->currentIndex();
-    int statusIndex = ui->statusCombo->currentIndex();
-    int priorityIndex = ui->priorityCombo->currentIndex();
 
-    // Проверка обязательных полей
-    QString borderRed = "border: 1px solid red;";
-    QString borderClear = "";
-
-    bool valid = true;
-    if (projectIndex == -1) {
-        ui->projectCombo->setStyleSheet(borderRed);
-        valid = false;
-    } else {
-        ui->projectCombo->setStyleSheet(borderClear);
-    }
-
-    if (trackerIndex == -1) {
-        ui->trackerCombo->setStyleSheet(borderRed);
-        valid = false;
-    } else {
-        ui->trackerCombo->setStyleSheet(borderClear);
-    }
-
-    if (statusIndex == -1) {
-        ui->statusCombo->setStyleSheet(borderRed);
-        valid = false;
-    } else {
-        ui->statusCombo->setStyleSheet(borderClear);
-    }
-
-    if (priorityIndex == -1) {
-        ui->priorityCombo->setStyleSheet(borderRed);
-        valid = false;
-    } else {
-        ui->priorityCombo->setStyleSheet(borderClear);
-    }
-
-    if (!valid) {
-        showError("Пожалуйста, заполните все обязательные поля: проект, трекер, статус, приоритет.");
+    if (title.isEmpty()) {
+        showError("Введите название тикета.");
         return;
     }
 
@@ -143,25 +101,20 @@ void CreateTicketDialog::on_confirmButton_clicked()
     QDate startDate = ui->startDateEdit->date();
     QString attachment = attachedFilePath;
 
-    if (title.isEmpty()) {
-        showError("Введите заголовок тикета.");
-        return;
-    }
-
+    QString sql = loadSqlQuery(":/sql/saveTicket.sql");
     QSqlQuery query;
-    query.prepare("INSERT INTO tickets (title, description, project_id, tracker_id, status_id, priority_id, assignee_id, watcher_id, creator_id, start_date, attachment) "
-                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    query.addBindValue(title);
-    query.addBindValue(description);
-    query.addBindValue(projectId);
-    query.addBindValue(trackerId);
-    query.addBindValue(statusId);
-    query.addBindValue(priorityId);
-    query.addBindValue(assigneeId);
-    query.addBindValue(watcherId);
-    query.addBindValue(userId);
-    query.addBindValue(startDate);
-    query.addBindValue(attachment);
+    query.prepare(sql);
+    query.bindValue(":title", title);
+    query.bindValue(":description", description);
+    query.bindValue(":projectId", projectId);
+    query.bindValue(":trackerId", trackerId);
+    query.bindValue(":statusId", statusId);
+    query.bindValue(":priorityId", priorityId);
+    query.bindValue(":assigneeId", assigneeId);
+    query.bindValue(":watcherId", watcherId);
+    query.bindValue(":creatorId", userId);
+    query.bindValue(":startDate", startDate);
+    query.bindValue(":attachment", attachment);
 
     if (!query.exec()) {
         showError("Ошибка при создании тикета: " + query.lastError().text());
@@ -172,17 +125,14 @@ void CreateTicketDialog::on_confirmButton_clicked()
     accept();
 }
 
-void CreateTicketDialog::on_cancelBtn_clicked()
-{
-    reject(); // Закрыть окно
+void CreateTicketDialog::on_cancelBtn_clicked() {
+    reject();
 }
 
-void CreateTicketDialog::on_attachBtn_clicked()
-{
-    // Заглушка
+void CreateTicketDialog::on_attachBtn_clicked() {
+    attachedFilePath = QFileDialog::getOpenFileName(this, "Выберите файл");
 }
 
-void CreateTicketDialog::showError(const QString &msg)
-{
+void CreateTicketDialog::showError(const QString &msg) {
     QMessageBox::critical(this, "Ошибка", msg);
 }

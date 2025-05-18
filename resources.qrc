@@ -1,16 +1,24 @@
 <RCC>
-  <qresource prefix="/sql">
-    <file>getChiefProjects.sql</file>
-    <file>getEmployeeProjects.sql</file>
-    <file>getPrioritiesName.sql</file>
-    <file>getProjectsName.sql</file>
-    <file>getProjectWatchers.sql</file>
-    <file>getStatusesName.sql</file>
-    <file>getTrackersName.sql</file>
-    <file>getUserLoginInfo.sql</file>
-    <file>getUserProfileInfo.sql</file>
-    <file>getUsersFullName.sql</file>
-    <file>getUserTickets.sql</file>
-    <file>saveTicket.sql</file>
-  </qresource>
+    <qresource prefix="/sql">
+        <file>getChiefProjects.sql</file>
+        <file>getEmployeeProjects.sql</file>
+        <file>getPrioritiesIdAndName.sql</file>
+        <file>getProjectsIdAndName.sql</file>
+        <file>getProjectWatchers.sql</file>
+        <file>getTrackersIdAndName.sql</file>
+        <file>getUserLoginInfo.sql</file>
+        <file>getUserProfileInfo.sql</file>
+        <file>getUsersIdAndFullName.sql</file>
+        <file>getUserTickets.sql</file>
+        <file>saveTicket.sql</file>
+        <file>updateUserProfilePhoto.sql</file>
+        <file>getStatusesIdAndName.sql</file>
+        <file>updateTicketInfo.sql</file>
+        <file>getFullTicketInfoById.sql</file>
+        <file>deleteProject.sql</file>
+        <file>getDepartmentIdByProject.sql</file>
+        <file>getUsersByDepartment.sql</file>
+        <file>saveTicketHistory.sql</file>
+        <file>getTicketHistoryByTicketId.sql</file>
+    </qresource>
 </RCC>
