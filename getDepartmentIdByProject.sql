@@ -1,6 +1,6 @@
 SELECT
-	department_id
+    department_id
 FROM
-	projects
+    projects
 WHERE
-	id = :projectId
+    id = :projectId

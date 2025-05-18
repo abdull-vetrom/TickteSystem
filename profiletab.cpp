@@ -1,5 +1,6 @@
 #include "profiletab.h"
 #include "utils.h"
+#include "storagemanager.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -13,7 +14,6 @@
 
 ProfileTab::ProfileTab(int userId, QWidget *parent)
     : QWidget(parent), userId(userId) {
-    // Информационные метки
     labelName = new QLabel(this);
     labelEmail = new QLabel(this);
     labelRole = new QLabel(this);
@@ -24,7 +24,6 @@ ProfileTab::ProfileTab(int userId, QWidget *parent)
     labelRole->setStyleSheet("font-size: 13px;");
     labelDept->setStyleSheet("font-size: 13px;");
 
-    // Фото
     photoLabel = new QLabel(this);
     photoLabel->setFixedSize(120, 120);
     photoLabel->setStyleSheet("border: 1px solid gray; background: #f0f0f0;");
@@ -33,13 +32,11 @@ ProfileTab::ProfileTab(int userId, QWidget *parent)
     uploadPhotoButton = new QPushButton("Загрузить фото", this);
     connect(uploadPhotoButton, &QPushButton::clicked, this, &ProfileTab::onUploadPhotoClicked);
 
-    // Блок фото (вертикально)
     QVBoxLayout* photoLayout = new QVBoxLayout;
     photoLayout->addWidget(photoLabel, 0, Qt::AlignHCenter);
     photoLayout->addWidget(uploadPhotoButton, 0, Qt::AlignHCenter);
     photoLayout->addStretch();
 
-    // Блок текста
     QVBoxLayout* infoLayout = new QVBoxLayout;
     infoLayout->addWidget(labelName);
     infoLayout->addWidget(labelEmail);
@@ -47,7 +44,6 @@ ProfileTab::ProfileTab(int userId, QWidget *parent)
     infoLayout->addWidget(labelDept);
     infoLayout->addStretch();
 
-    // Основной макет
     QHBoxLayout* mainLayout = new QHBoxLayout;
     mainLayout->addLayout(infoLayout, 3);
     mainLayout->addSpacing(20);
@@ -78,7 +74,7 @@ void ProfileTab::loadProfile() {
         labelDept->setText("🏢 Отдел: " + department);
 
         if (!photoPath.isEmpty()) {
-            QPixmap pix(photoPath);
+            QPixmap pix(StorageManager::getAbsolutePath(photoPath));
             photoLabel->setPixmap(pix.scaled(photoLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
         }
     } else {
@@ -91,17 +87,16 @@ void ProfileTab::onUploadPhotoClicked() {
     if (fileName.isEmpty())
         return;
 
-    QString destDir = QDir::currentPath() + "/images";
-    QDir().mkpath(destDir);
-
-    QString newFilePath = destDir + QString("/user_%1.png").arg(userId);
-    QFile::remove(newFilePath);
-    QFile::copy(fileName, newFilePath);
+    QString relativePath = StorageManager::saveToStorage(fileName, "photos", QString("user_%1.png").arg(userId));
+    if (relativePath.isEmpty()) {
+        qDebug() << "Не удалось сохранить фото в storage";
+        return;
+    }
 
     QSqlQuery query;
     QString sql = loadSqlQuery(":/sql/updateUserProfilePhoto.sql");
     query.prepare(sql);
-    query.bindValue(":path", newFilePath);
+    query.bindValue(":path", relativePath);
     query.bindValue(":id", userId);
 
     if (!query.exec()) {
@@ -109,6 +104,6 @@ void ProfileTab::onUploadPhotoClicked() {
         return;
     }
 
-    QPixmap pix(newFilePath);
+    QPixmap pix(StorageManager::getAbsolutePath(relativePath));
     photoLabel->setPixmap(pix.scaled(photoLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }

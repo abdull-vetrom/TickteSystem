@@ -4,7 +4,6 @@
         <file>getEmployeeProjects.sql</file>
         <file>getPrioritiesIdAndName.sql</file>
         <file>getProjectsIdAndName.sql</file>
-        <file>getProjectWatchers.sql</file>
         <file>getTrackersIdAndName.sql</file>
         <file>getUserLoginInfo.sql</file>
         <file>getUserProfileInfo.sql</file>
@@ -20,5 +19,8 @@
         <file>getUsersByDepartment.sql</file>
         <file>saveTicketHistory.sql</file>
         <file>getTicketHistoryByTicketId.sql</file>
+        <file>getTicketFilePath.sql</file>
+        <file>saveTicketFile.sql</file>
+        <file>getTicketFilesByTicketId.sql</file>
     </qresource>
 </RCC>
