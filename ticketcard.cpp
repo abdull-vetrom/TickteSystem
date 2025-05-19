@@ -28,6 +28,7 @@ TicketCard::TicketCard(int ticketId, int userId, QTabWidget* tabWidget, QWidget*
     connect(ui.backButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
     connect(ui.saveButton, &QPushButton::clicked, this, &TicketCard::onSaveClicked);
     connect(ui.attachFileButton, &QPushButton::clicked, this, &TicketCard::onAttachFileClicked);
+    connect(ui.closeButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
 
     QString fullTitle = QString("№%1  <b>%2</b>  (<i>%3</i>)")
                             .arg(ticket.id)
@@ -280,23 +281,50 @@ void TicketCard::loadHistory() {
         delete child;
     }
 
-    while (query.next()) {
-        QString html = QString("<b>%1</b> (%2):<br>%3")
-        .arg(query.value("user").toString())
-            .arg(query.value("changed_at").toString())
-            .arg(query.value("changes_summary").toString());
-        if (!query.value("comment").toString().isEmpty())
-            html += "<br><i>" + query.value("comment").toString() + "</i>";
+    QList<QWidget*> blocks;
 
-        QLabel* label = new QLabel(html);
-        label->setWordWrap(true);
-        label->setTextFormat(Qt::RichText);
-        ui.historyLayout->addWidget(label);
+    while (query.next()) {
+        QString user = query.value("user").toString();
+        QDateTime dt = query.value("changed_at").toDateTime();
+        QString formattedTime = dt.toString("dd.MM.yyyy HH:mm");
+        QString summary = query.value("changes_summary").toString();
+        QString comment = query.value("comment").toString();
+
+        QWidget* historyItemWidget = new QWidget;
+        historyItemWidget->setStyleSheet("background: white; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 20px;");
+        QVBoxLayout* historyItemLayout = new QVBoxLayout(historyItemWidget);
+        historyItemLayout->setContentsMargins(8, 8, 8, 8);
+
+        // Верхний блок: ФИО, дата, изменения
+        QLabel* topLabel = new QLabel(
+            QString("<b>%1</b> <span style='color:gray'>(%2)</span><br>%3")
+                .arg(user, formattedTime, summary)
+            );
+        topLabel->setWordWrap(true);
+        topLabel->setTextFormat(Qt::RichText);
+        topLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        topLabel->setStyleSheet("background: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 6px;");
+        historyItemLayout->addWidget(topLabel);
+
+        // Нижний блок: комментарий (если есть)
+        if (!comment.isEmpty()) {
+            QLabel* commentLabel = new QLabel("<i>" + comment + "</i>");
+            commentLabel->setWordWrap(true);
+            commentLabel->setTextFormat(Qt::RichText);
+            commentLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+            commentLabel->setStyleSheet("background: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 6px;");
+            historyItemLayout->addWidget(commentLabel);
+        }
+
+        blocks.prepend(historyItemWidget);
     }
+
+    for (QWidget* w : blocks)
+        ui.historyLayout->addWidget(w);
 
     ui.historyScrollArea->setWidget(ui.historyScrollContents);
     if (QScrollBar* bar = ui.historyScrollArea->verticalScrollBar())
-        bar->setValue(bar->maximum());
+        bar->setValue(bar->minimum());
 }
 
 void TicketCard::loadFiles() {
