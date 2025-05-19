@@ -2,6 +2,7 @@
 #include "createticketdialog.h"
 #include "utils.h"
 #include "ticketcard.h"
+#include "prioritydelegate.h"
 
 #include <QHeaderView>
 #include <QVBoxLayout>
@@ -78,9 +79,16 @@ void MyTicketsTab::loadTickets() {
         QList<QStandardItem*> row;
         for (int i = 1; i <= 4; ++i) {
             QStandardItem* item = new QStandardItem(query.value(i).toString());
-            if (i == 1) item->setData(ticketId, Qt::UserRole);  // сохраним ticketId
+            if (i == 1)
+                item->setData(ticketId, Qt::UserRole);  // Сохраняем ticketId в колонке "Название"
             row.append(item);
         }
         model->appendRow(row);
     }
+
+    // Назначаем делегат для ВСЕХ КОЛОНОК
+    ui.tableView->setItemDelegate(new PriorityDelegate(this));
+
 }
+
+
