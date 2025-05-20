@@ -13,5 +13,6 @@ JOIN priorities pr
 JOIN statuses s
     ON t.status_id = s.id
 WHERE
-    t.assignee_id = :userId
-    OR t.watcher_id = :userId
+    (t.assignee_id = :userId
+    OR t.watcher_id = :userId)
+    AND s.id != 3

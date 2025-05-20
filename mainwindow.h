@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "myticketstab.h"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -19,7 +20,7 @@ private:
     int currentUserId;
     QString currentUserName;
     QString currentUserRole;
-
+    MyTicketsTab* ticketsTab = nullptr;
     void setupTabs();
 };
 

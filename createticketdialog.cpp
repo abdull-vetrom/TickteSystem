@@ -1,12 +1,16 @@
+
 #include "createticketdialog.h"
 #include "ui_createticketdialog.h"
 #include "utils.h"
+#include "storagemanager.h"
 
 #include <QMessageBox>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDateTime>
 #include <QFileDialog>
+#include <QFileInfo>
+#include <QLabel>
 
 CreateTicketDialog::CreateTicketDialog(int currentUserId, QWidget *parent)
     : QDialog(parent), ui(new Ui::CreateTicketDialog), userId(currentUserId) {
@@ -28,27 +32,23 @@ void CreateTicketDialog::populateCombos() {
 
     sql = loadSqlQuery(":/sql/getProjectsIdAndName.sql");
     query.exec(sql);
-    while (query.next()) {
+    while (query.next())
         ui->projectCombo->addItem(query.value("name").toString(), query.value("id"));
-    }
 
     sql = loadSqlQuery(":/sql/getTrackersIdAndName.sql");
     query.exec(sql);
-    while (query.next()) {
+    while (query.next())
         ui->trackerCombo->addItem(query.value("name").toString(), query.value("id"));
-    }
 
     sql = loadSqlQuery(":/sql/getStatusesIdAndName.sql");
     query.exec(sql);
-    while (query.next()) {
+    while (query.next())
         ui->statusCombo->addItem(query.value("name").toString(), query.value("id"));
-    }
 
     sql = loadSqlQuery(":/sql/getPrioritiesIdAndName.sql");
     query.exec(sql);
-    while (query.next()) {
+    while (query.next())
         ui->priorityCombo->addItem(query.value("name").toString(), query.value("id"));
-    }
 
     updateWatchersByProject();
 }
@@ -69,7 +69,6 @@ void CreateTicketDialog::updateWatchersByProject() {
     }
 
     int deptId = query.value("department_id").toInt();
-
     sql = loadSqlQuery(":/sql/getUsersByDepartment.sql");
     query.prepare(sql);
     query.bindValue(":departmentId", deptId);
@@ -99,7 +98,6 @@ void CreateTicketDialog::on_confirmButton_clicked() {
     int assigneeId = ui->assigneeCombo->currentData().toInt();
     int watcherId = ui->watcherCombo->currentData().toInt();
     QDate startDate = ui->startDateEdit->date();
-    QString attachment = attachedFilePath;
 
     QString sql = loadSqlQuery(":/sql/saveTicket.sql");
     QSqlQuery query;
@@ -114,11 +112,25 @@ void CreateTicketDialog::on_confirmButton_clicked() {
     query.bindValue(":watcherId", watcherId);
     query.bindValue(":creatorId", userId);
     query.bindValue(":startDate", startDate);
-    query.bindValue(":attachment", attachment);
 
     if (!query.exec()) {
         showError("Ошибка при создании тикета: " + query.lastError().text());
         return;
+    }
+
+    int ticketId = query.lastInsertId().toInt();
+
+    if (!newlyAttachedFiles.isEmpty()) {
+        QString fileSql = loadSqlQuery(":/sql/saveTicketFile.sql");
+        QSqlQuery fileQuery;
+        for (const QString &file : newlyAttachedFiles) {
+            fileQuery.prepare(fileSql);
+            fileQuery.bindValue(":ticketId", ticketId);
+            fileQuery.bindValue(":fileName", file);
+            fileQuery.bindValue(":relativePath", "ticketFiles/" + file);
+            if (!fileQuery.exec())
+                qDebug() << "Ошибка сохранения файла в БД:" << file << fileQuery.lastError().text();
+        }
     }
 
     emit ticketCreated();
@@ -130,7 +142,25 @@ void CreateTicketDialog::on_cancelBtn_clicked() {
 }
 
 void CreateTicketDialog::on_attachBtn_clicked() {
-    attachedFilePath = QFileDialog::getOpenFileName(this, "Выберите файл");
+    QString filePath = QFileDialog::getOpenFileName(this, "Выберите файл");
+    if (filePath.isEmpty()) return;
+
+    QFileInfo fi(filePath);
+    QString storedPath = StorageManager::saveToStorage(filePath, "ticketFiles", fi.fileName());
+
+    if (!storedPath.isEmpty()) {
+        newlyAttachedFiles.append(fi.fileName());
+        addFileLabel(fi.fileName());
+    } else {
+        QMessageBox::warning(this, "Ошибка", "Не удалось скопировать файл в storage.");
+    }
+}
+
+void CreateTicketDialog::addFileLabel(const QString &fileName) {
+    QLabel *label = new QLabel(QString("<b><font color='blue'>%1</font></b>").arg(fileName));
+    label->setStyleSheet("QLabel:hover { text-decoration: underline; }");
+    label->setCursor(Qt::PointingHandCursor);
+    ui->attachedFilesLayout->addWidget(label);
 }
 
 void CreateTicketDialog::showError(const QString &msg) {

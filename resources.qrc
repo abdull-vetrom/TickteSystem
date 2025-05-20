@@ -22,5 +22,11 @@
         <file>getTicketFilePath.sql</file>
         <file>saveTicketFile.sql</file>
         <file>getTicketFilesByTicketId.sql</file>
+        <file>getTicketsByProject.sql</file>
+        <file>getProjectIdByName.sql</file>
+        <file>deleteTicketFilesByProject.sql</file>
+        <file>deleteTicketHistoryByProject.sql</file>
+        <file>deleteTicketsByProject.sql</file>
+        <file>getUserDoneTickets.sql</file>
     </qresource>
 </RCC>

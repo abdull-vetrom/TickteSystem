@@ -13,6 +13,7 @@ class MyTicketsTab : public QWidget {
     Q_OBJECT
 public:
     MyTicketsTab(int userId, const QString& role_, QTabWidget* tabWidget, QWidget* parent = nullptr);
+    void loadTickets();
 
 private slots:
     void onCreateTicketClicked();
@@ -23,11 +24,11 @@ private:
     QString userRole;
     QString role;
     QStandardItemModel* model;
-    QTabWidget* tabWidget;
+    QTabWidget* tabWidget = nullptr;
 
     Ui::TicketTableForm ui;
     QPushButton* createTicketButton;
-    void loadTickets();
+    QStandardItemModel* doneModel = nullptr;
 };
 
 #endif // MYTICKETSTAB_H

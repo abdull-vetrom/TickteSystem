@@ -22,12 +22,17 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::setupTabs() {
+    // Сохраняем тикет-таб для дальнейшего доступа
+    ticketsTab = new MyTicketsTab(currentUserId, currentUserRole, ui->tabWidget, this);
+    ui->tabWidget->addTab(ticketsTab, "Мои тикеты");
 
-    ui->tabWidget->addTab(new MyTicketsTab(currentUserId, currentUserRole, ui->tabWidget, this), "Мои тикеты");
     if (currentUserRole == "начальник" || currentUserRole == "работник") {
-        ui->tabWidget->addTab(new MyProjectsTab(currentUserId, currentUserRole), "Мои проекты");
+        MyProjectsTab* projectsTab = new MyProjectsTab(currentUserId, currentUserRole, ui->tabWidget);
+        ui->tabWidget->addTab(projectsTab, "Мои проекты");
+
+        // Подключаем сигнал обновления тикетов
+        connect(projectsTab, &MyProjectsTab::ticketsInvalidated, ticketsTab, &MyTicketsTab::loadTickets);
     }
 
     ui->tabWidget->addTab(new ProfileTab(currentUserId), "Мой профиль");
-
 }
