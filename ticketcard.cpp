@@ -30,6 +30,10 @@ TicketCard::TicketCard(int ticketId, int userId, QTabWidget* tabWidget, QWidget*
     connect(ui.attachFileButton, &QPushButton::clicked, this, &TicketCard::onAttachFileClicked);
     connect(ui.closeButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
 
+    bool ok1 = connect(ui.backButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
+    bool ok2 = connect(ui.closeButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
+    qDebug() << "[TicketCard] connect back:" << ok1 << "close:" << ok2;
+
     QString fullTitle = QString("№%1  <b>%2</b>  (<i>%3</i>)")
                             .arg(ticket.id)
                             .arg(ticket.title)
@@ -253,20 +257,35 @@ void TicketCard::onAttachFileClicked() {
     }
 }
 
-
 void TicketCard::onBackClicked() {
     emit ticketUpdated();
-    if (tabWidget) {
-        int index = tabWidget->indexOf(this);
-        if (index != -1) tabWidget->removeTab(index);
-        for (int i = 0; i < tabWidget->count(); ++i) {
-            if (tabWidget->tabText(i) == "Мои тикеты") {
-                tabWidget->setCurrentIndex(i);
-                break;
-            }
+
+    if (!tabWidget) {
+        qDebug() << "[TicketCard] tabWidget is null!";
+        return;
+    }
+
+    int myIndex = tabWidget->indexOf(this);
+    qDebug() << "[TicketCard] my index in tabWidget:" << myIndex;
+
+    // Переключаемся на "Мои тикеты"
+    for (int i = 0; i < tabWidget->count(); ++i) {
+        qDebug() << "Tab" << i << ":" << tabWidget->tabText(i);
+        if (tabWidget->tabText(i) == "Мои тикеты") {
+            tabWidget->setCurrentIndex(i);
+            qDebug() << "Switched to: Мои тикеты";
+            break;
         }
     }
+
+    if (myIndex != -1) {
+        tabWidget->removeTab(myIndex);
+        qDebug() << "Tab removed at index:" << myIndex;
+    } else {
+        qDebug() << "This tab was not found in tabWidget";
+    }
 }
+
 
 void TicketCard::loadHistory() {
     QString sql = loadSqlQuery(":/sql/getTicketHistoryByTicketId.sql");

@@ -109,7 +109,19 @@
     <widget class="QPlainTextEdit" name="descriptionEdit"/>
    </item>
 
-   <item row="9" column="0" colspan="2">
+   <item row="9" column="0">
+    <widget class="QLabel" name="labelFiles">
+     <property name="text">
+      <string>Файлы</string>
+     </property>
+    </widget>
+   </item>
+
+   <item row="10" column="0" colspan="2">
+    <layout class="QVBoxLayout" name="attachedFilesLayout"/>
+   </item>
+
+   <item row="11" column="0" colspan="2">
     <layout class="QHBoxLayout" name="buttonLayout">
      <item>
       <widget class="QPushButton" name="confirmButton">
@@ -134,6 +146,7 @@
      </item>
     </layout>
    </item>
+
   </layout>
  </widget>
  <resources/>

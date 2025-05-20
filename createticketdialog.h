@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QSqlDatabase>
+#include <QStringList>
 
 namespace Ui {
 class CreateTicketDialog;
@@ -29,10 +30,11 @@ private:
     Ui::CreateTicketDialog *ui;
     QSqlDatabase db;
     int userId;
-    QString attachedFilePath;
+    QStringList newlyAttachedFiles;
 
     void populateCombos();
     void showError(const QString &msg);
+    void addFileLabel(const QString &fileName);
 };
 
 #endif // CREATETICKETDIALOG_H
