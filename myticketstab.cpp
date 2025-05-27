@@ -149,18 +149,6 @@ void MyTicketsTab::loadTickets() {
     ui.doneTableView->setShowGrid(true);
     ui.doneTableView->setAlternatingRowColors(false);
 
-    // Без приоритетного делегата
-    // ui.doneTableView->setItemDelegate(new PriorityDelegate(this));
-
-    // Убираем стили по приоритетам и красим всё в серый
-    for (int row = 0; row < doneModel->rowCount(); ++row) {
-        for (int col = 0; col < doneModel->columnCount(); ++col) {
-            QStandardItem* item = doneModel->item(row, col);
-            if (item)
-                item->setBackground(QColor("#E8E8E8"));  // светло-серый
-        }
-    }
-
     QSqlQuery doneQuery;
     QString doneSql = loadSqlQuery(":/sql/getUserDoneTickets.sql");
     doneQuery.prepare(doneSql);
@@ -169,8 +157,17 @@ void MyTicketsTab::loadTickets() {
     if (doneQuery.exec()) {
         while (doneQuery.next()) {
             QList<QStandardItem*> row;
+            int ticketId = doneQuery.value(0).toInt();  // <- важно: сохраняем ID
             for (int i = 1; i <= 4; ++i) {
-                row.append(new QStandardItem(doneQuery.value(i).toString()));
+                QStandardItem* item = new QStandardItem(doneQuery.value(i).toString());
+                item->setBackground(QColor("#E8E8E8"));
+                if (i == 1) {
+                    QFont font = item->font();
+                    font.setStrikeOut(true);
+                    item->setFont(font);
+                    item->setData(ticketId, Qt::UserRole);  // <- сохраняем ID в название
+                }
+                row.append(item);
             }
             doneModel->appendRow(row);
         }
