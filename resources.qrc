@@ -29,4 +29,9 @@
         <file>deleteTicketsByProject.sql</file>
         <file>getUserDoneTickets.sql</file>
     </qresource>
+
+    <qresource prefix="/icons">
+	<file>app_icon.png</file>
+  	<file>logo.png</file>
+    </qresource>
 </RCC>

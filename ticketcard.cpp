@@ -17,7 +17,7 @@
 TicketCard::TicketCard(int ticketId, int userId, QTabWidget* tabWidget, QWidget* parent)
     : QWidget(parent), ticketId(ticketId), userId(userId), tabWidget(tabWidget) {
     ui.setupUi(this);
-    ui.historyScrollArea->setWidget(ui.historyScrollContents);
+    // ui.historyScrollArea->setWidget(ui.historyScrollContents);
 
     if (!ticket.load(ticketId)) {
         close();
@@ -176,6 +176,7 @@ void TicketCard::onSaveClicked() {
     }
 
     QStringList changes;
+    QStringList fileLinks;
     auto track = [&](const QString& field, const QString& oldVal, const QString& newVal) {
         if (oldVal != newVal) {
             changes << QString("Параметр <b>%1</b> изменился с <i>%2</i> на <b>%3</b>").arg(field, oldVal, newVal);
@@ -189,13 +190,32 @@ void TicketCard::onSaveClicked() {
     track("Наблюдатель", ticket.watcher, newWatcher);
     track("Трекер", ticket.tracker, newTracker);
 
-    if (!changes.isEmpty() || !comment.isEmpty()) {
+    QString sqlFileInsert = loadSqlQuery(":/sql/saveTicketFile.sql");
+    QSqlQuery insertQuery;
+
+    for (const QString& file : newlyAttachedFiles) {
+        insertQuery.prepare(sqlFileInsert);
+        insertQuery.bindValue(":ticketId", ticketId);
+        insertQuery.bindValue(":fileName", file);
+        insertQuery.bindValue(":relativePath", "ticketFiles/" + file);
+        if (!insertQuery.exec()) {
+            qDebug() << "Ошибка сохранения файла в БД:" << file << insertQuery.lastError().text();
+        } else {
+            fileLinks << QString("Файл <a href='%1'>%2</a> добавлен").arg(file, file);
+        }
+    }
+    newlyAttachedFiles.clear();
+
+    if (!changes.isEmpty() || !comment.isEmpty() || !fileLinks.isEmpty()) {
+        QStringList fullChanges = changes;
+        fullChanges.append(fileLinks);
+
         QString historySql = loadSqlQuery(":/sql/saveTicketHistory.sql");
         QSqlQuery historyQuery;
         historyQuery.prepare(historySql);
         historyQuery.bindValue(":ticketId", ticketId);
         historyQuery.bindValue(":userId", userId);
-        historyQuery.bindValue(":summary", changes.join("<br>"));
+        historyQuery.bindValue(":summary", fullChanges.join("<br>"));
         historyQuery.bindValue(":comment", comment);
         historyQuery.bindValue(":changedAt", QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss"));
         historyQuery.exec();
@@ -229,9 +249,10 @@ void TicketCard::onSaveClicked() {
             insertQuery.bindValue(":relativePath", "ticketFiles/" + file);
             if (!insertQuery.exec()) {
                 qDebug() << "Ошибка сохранения файла в БД:" << file << insertQuery.lastError().text();
+            } else {
+                fileLinks << QString("Файл <a href='%1'>%2</a> добавлен").arg(file, file);
             }
         }
-        newlyAttachedFiles.clear();
     }
 
     emit ticketUpdated();
@@ -335,7 +356,7 @@ void TicketCard::loadHistory() {
             commentText->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
             // Установка ширины текста
-            commentText->document()->setTextWidth(ui.historyScrollArea->viewport()->width() - 40);
+            commentText->document()->setTextWidth(commentText->viewport()->width());
 
             // Расчёт высоты содержимого
             int calculatedHeight = int(commentText->document()->size().height()) + 12;
@@ -355,26 +376,51 @@ void TicketCard::loadHistory() {
     for (QWidget* w : blocks)
         ui.historyLayout->addWidget(w);
 
-    ui.historyScrollArea->setWidget(ui.historyScrollContents);
-    if (QScrollBar* bar = ui.historyScrollArea->verticalScrollBar())
-        bar->setValue(bar->minimum());
+    // ui.historyScrollArea->setWidget(ui.historyScrollContents);
+    // if (QScrollBar* bar = ui.historyScrollArea->verticalScrollBar())
+    //     bar->setValue(bar->minimum());
 }
 
 void TicketCard::loadFiles() {
+    // Очистка layout
     QLayoutItem* item;
     while ((item = ui.filesLayout->takeAt(0)) != nullptr) {
-        delete item->widget();
+        if (item->widget())
+            delete item->widget();
         delete item;
     }
 
+    // Добавление spacer-а в конец для "прижатия вверх"
+    ui.filesLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    // Загрузка файлов и добавление в layout перед spacer-ом
     QString sql = loadSqlQuery(":/sql/getTicketFilesByTicketId.sql");
     QSqlQuery query;
     query.prepare(sql);
     query.bindValue(":ticketId", ticketId);
     if (query.exec()) {
-        while (query.next())
-            addFileLabel(query.value("file_name").toString());
+        while (query.next()) {
+            const QString fileName = query.value("file_name").toString();
+
+            QLabel* label = new QLabel(QString("<b><font color='blue'>%1</font></b>").arg(fileName));
+            label->setCursor(Qt::PointingHandCursor);
+            label->setStyleSheet("QLabel:hover { text-decoration: underline; }");
+            label->installEventFilter(this);
+            label->setProperty("fileName", fileName);
+
+            // Вставить перед spacer-ом (последний элемент)
+            ui.filesLayout->insertWidget(ui.filesLayout->count() - 1, label);
+        }
     }
+
+    int totalHeight = 0;
+    for (int i = 0; i < ui.filesLayout->count(); ++i) {
+        QLayoutItem* item = ui.filesLayout->itemAt(i);
+        if (QWidget* w = item->widget())
+            totalHeight += w->sizeHint().height();
+    }
+
+    ui.filesBox->setMinimumHeight(std::max(40, totalHeight + 20));
 }
 
 void TicketCard::addFileLabel(const QString& fileName) {
@@ -383,7 +429,7 @@ void TicketCard::addFileLabel(const QString& fileName) {
     label->setStyleSheet("QLabel:hover { text-decoration: underline; }");
     label->installEventFilter(this);
     label->setProperty("fileName", fileName);
-    ui.filesLayout->addWidget(label);
+    ui.filesLayout->insertWidget(0, label);
 }
 
 bool TicketCard::eventFilter(QObject* obj, QEvent* event) {
