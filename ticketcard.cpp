@@ -325,14 +325,28 @@ void TicketCard::loadHistory() {
         topLabel->setStyleSheet("background: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 6px;");
         historyItemLayout->addWidget(topLabel);
 
-        // Нижний блок: комментарий (если есть)
         if (!comment.isEmpty()) {
-            QLabel* commentLabel = new QLabel("<i>" + comment + "</i>");
-            commentLabel->setWordWrap(true);
-            commentLabel->setTextFormat(Qt::RichText);
-            commentLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-            commentLabel->setStyleSheet("background: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 6px;");
-            historyItemLayout->addWidget(commentLabel);
+            QTextEdit* commentText = new QTextEdit(comment);
+            commentText->setReadOnly(true);
+            commentText->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+            commentText->setStyleSheet("background: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 6px;");
+            commentText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+            commentText->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            commentText->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+            // Установка ширины текста
+            commentText->document()->setTextWidth(ui.historyScrollArea->viewport()->width() - 40);
+
+            // Расчёт высоты содержимого
+            int calculatedHeight = int(commentText->document()->size().height()) + 12;
+
+            // Гарантируем минимальную высоту (например, 40px)
+            int finalHeight = std::max(calculatedHeight, 60);
+
+            commentText->setMinimumHeight(finalHeight);
+            commentText->setMaximumHeight(finalHeight);
+
+            historyItemLayout->addWidget(commentText);
         }
 
         blocks.prepend(historyItemWidget);
