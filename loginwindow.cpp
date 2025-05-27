@@ -8,10 +8,19 @@
 #include <QMessageBox>
 #include <QFile>
 
+#include <QPropertyAnimation>
+
 LoginWindow::LoginWindow(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::LoginWindow) {
     ui->setupUi(this);
+
+    setWindowOpacity(0.0);  // начальная прозрачность
+    QPropertyAnimation* fadeIn = new QPropertyAnimation(this, "windowOpacity");
+    fadeIn->setDuration(400);
+    fadeIn->setStartValue(0.0);
+    fadeIn->setEndValue(1.0);
+    fadeIn->start(QAbstractAnimation::DeleteWhenStopped);
 
     if (!DBManager::connect("localhost", "ticket_system", "root", "toor")) {
         QMessageBox::critical(this, "Ошибка", "Не удалось подключиться к базе данных.");
@@ -42,9 +51,10 @@ void LoginWindow::attemptLogin(const QString& email, const QString& password) {
         QString name = query.value(1).toString();
         QString role = query.value(2).toString();
 
-        MainWindow *mainWindow = new MainWindow(userId, name, role, this);
+        MainWindow *mainWindow = new MainWindow(userId, name, role);
+        mainWindow->setAttribute(Qt::WA_DeleteOnClose);
         mainWindow->show();
-        this->hide();
+        this->close();
     } else {
         QMessageBox::warning(this, "Ошибка", "Неверный email или пароль.");
     }

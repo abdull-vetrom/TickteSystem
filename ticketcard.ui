@@ -145,14 +145,11 @@ QPushButton:hover {
         <widget class="QGroupBox" name="historyBox">
          <property name="title"><string>История</string></property>
          <layout class="QVBoxLayout" name="verticalLayout_historyGroup">
-          <item>
-           <widget class="QScrollArea" name="historyScrollArea">
-            <property name="widgetResizable"><bool>true</bool></property>
-            <widget class="QWidget" name="historyScrollContents">
-             <layout class="QVBoxLayout" name="historyLayout"/>
-            </widget>
-           </widget>
-          </item>
+         <item>
+          <widget class="QWidget" name="historyScrollContents">
+           <layout class="QVBoxLayout" name="historyLayout"/>
+          </widget>
+         </item>
          </layout>
         </widget>
        </item>
