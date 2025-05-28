@@ -1,26 +1,31 @@
-#ifndef PROFILETAB_H
-#define PROFILETAB_H
+#pragma once
 
 #include <QWidget>
-#include <QLabel>
-#include <QPushButton>
+
+namespace Ui {
+class ProfileTab;
+}
 
 class ProfileTab : public QWidget {
     Q_OBJECT
+
 public:
     explicit ProfileTab(int userId, QWidget *parent = nullptr);
+    ~ProfileTab();
+
+public slots:
+    void refreshStats();
 
 private slots:
     void onUploadPhotoClicked();
 
 private:
+    Ui::ProfileTab* ui;
     int userId;
-
-    QLabel *labelName, *labelEmail, *labelRole, *labelDept;
-    QLabel *photoLabel;
-    QPushButton *uploadPhotoButton;
+    QString userRole;
 
     void loadProfile();
+    void loadStatusStats();
+    void loadPriorityStats();
+    void loadProjectStats();
 };
-
-#endif // PROFILETAB_H

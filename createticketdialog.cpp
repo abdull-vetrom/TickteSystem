@@ -134,6 +134,7 @@ void CreateTicketDialog::on_confirmButton_clicked() {
     }
 
     emit ticketCreated();
+    emit ticketSuccessfullyCreated();
     accept();
 }
 

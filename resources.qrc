@@ -28,10 +28,15 @@
         <file>deleteTicketHistoryByProject.sql</file>
         <file>deleteTicketsByProject.sql</file>
         <file>getUserDoneTickets.sql</file>
+        <file>getUserDepartmentProjectStats.sql</file>
+        <file>getUserTicketCountByPriority.sql</file>
+        <file>getUserTicketCountByStatus.sql</file>
+        <file>getDepartmentNameByUser.sql</file>
+        <file>getDepartmentIdByUserId.sql</file>
+        <file>insertUser.sql</file>
     </qresource>
-
     <qresource prefix="/icons">
-	<file>app_icon.png</file>
-  	<file>logo.png</file>
+        <file>app_icon.png</file>
+        <file>logo.png</file>
     </qresource>
 </RCC>

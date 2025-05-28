@@ -16,6 +16,7 @@ public:
 
 signals:
     void ticketUpdated();
+    void ticketCreated();
 
 private:
     Ui::TicketCard ui;

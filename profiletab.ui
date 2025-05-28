@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ProfileTab</class>
+ <widget class="QWidget" name="ProfileTab">
+  <property name="styleSheet">
+   <string notr="true">
+    QWidget {
+        background-color: #ffffff;
+        font-family: 'Segoe UI', sans-serif;
+        color: #222;
+    }
+
+    QLabel {
+        font-size: 14px;
+        margin: 2px 0;
+    }
+
+    QLabel#labelName {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    QLabel#labelEmail, QLabel#labelRole, QLabel#labelDept {
+        font-size: 16px;
+    }
+
+    QPushButton {
+        padding: 6px 12px;
+        border: 1px solid #0078D7;
+        background-color: #0078D7;
+        color: white;
+        border-radius: 4px;
+    }
+
+    QPushButton:hover {
+        background-color: #005A9E;
+    }
+
+    QGroupBox {
+        font-size: 16px;
+        font-weight: bold;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        margin-top: 10px;
+    }
+
+    QGroupBox::title {
+        subcontrol-origin: margin;
+        subcontrol-position: top center;
+        padding: 0 6px;
+    }
+   </string>
+  </property>
+
+  <layout class="QVBoxLayout" name="mainLayout">
+
+   <!-- ВЕРХНИЙ БЛОК: Фото и информация -->
+   <item>
+    <layout class="QHBoxLayout" name="headerLayout">
+
+     <!-- Фото -->
+     <item>
+      <layout class="QVBoxLayout" name="photoLayout">
+       <property name="alignment">
+        <set>Qt::AlignTop</set>
+       </property>
+       <item><widget class="QLabel" name="photoLabel">
+        <property name="minimumSize"><size><width>180</width><height>240</height></size></property>
+        <property name="alignment"><set>Qt::AlignCenter</set></property>
+       </widget></item>
+       <item><widget class="QPushButton" name="uploadPhotoButton">
+        <property name="text"><string>Загрузить фото</string></property>
+        <property name="minimumSize"><size><width>180</width><height>0</height></size></property>
+        <property name="maximumSize"><size><width>180</width><height>16777215</height></size></property>
+       </widget></item>
+       <item><spacer name="photoSpacer">
+        <property name="orientation"><enum>Qt::Vertical</enum></property>
+        <property name="sizeType"><enum>QSizePolicy::Expanding</enum></property>
+       </spacer></item>
+      </layout>
+     </item>
+
+     <!-- Информация -->
+     <item>
+      <layout class="QVBoxLayout" name="infoLayout">
+       <item><widget class="QLabel" name="labelName"/></item>
+       <item><widget class="QLabel" name="labelEmail"/></item>
+       <item><widget class="QLabel" name="labelRole"/></item>
+       <item><widget class="QLabel" name="labelDept"/></item>
+       <item><widget class="QPushButton" name="addEmployeeButton">
+        <property name="text"><string>Добавить сотрудника</string></property>
+       </widget></item>
+       <item><spacer name="infoSpacer">
+        <property name="orientation"><enum>Qt::Vertical</enum></property>
+        <property name="sizeType"><enum>QSizePolicy::Expanding</enum></property>
+       </spacer></item>
+      </layout>
+     </item>
+
+    </layout>
+   </item>
+
+   <!-- НИЖНИЙ БЛОК: Статистика -->
+   <item>
+    <layout class="QVBoxLayout" name="statsLayout"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
