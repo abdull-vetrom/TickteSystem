@@ -3,6 +3,7 @@
 
 #include "myticketstab.h"
 #include <QMainWindow>
+#include "profiletab.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -14,6 +15,7 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(int userId, const QString& name, const QString& role, QWidget *parent = nullptr);
     ~MainWindow();
+    ProfileTab* profileTab;
 
 private:
     Ui::MainWindow *ui;
@@ -22,6 +24,7 @@ private:
     QString currentUserRole;
     MyTicketsTab* ticketsTab = nullptr;
     void setupTabs();
+
 };
 
 #endif // MAINWINDOW_H

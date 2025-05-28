@@ -3,6 +3,8 @@
 #include "utils.h"
 #include "ticketcard.h"
 #include "prioritydelegate.h"
+#include "mainwindow.h"
+#include "profiletab.h"
 
 #include <QHeaderView>
 #include <QVBoxLayout>
@@ -51,6 +53,11 @@ MyTicketsTab::MyTicketsTab(int userId, const QString& role_, QTabWidget* tabWidg
 void MyTicketsTab::onCreateTicketClicked() {
     CreateTicketDialog *dialog = new CreateTicketDialog(userId, this);
     connect(dialog, &CreateTicketDialog::ticketCreated, this, &MyTicketsTab::loadTickets);
+
+    MainWindow* mw = qobject_cast<MainWindow*>(window());
+    if (mw && mw->profileTab)
+        connect(dialog, &CreateTicketDialog::ticketCreated, mw->profileTab, &ProfileTab::refreshStats);
+
     dialog->exec();
     delete dialog;
 }
@@ -72,12 +79,17 @@ void MyTicketsTab::onTicketClicked(const QModelIndex& index) {
     if (ticketId < 0)
         return;
 
-    TicketCard* window = new TicketCard(ticketId, userId, tabWidget, this);  // ← ключевое: tabWidget
+    TicketCard* window = new TicketCard(ticketId, userId, tabWidget, this);
     tabWidget->addTab(window, "Просмотр тикета");
     tabWidget->setCurrentWidget(window);
-    connect(window, &TicketCard::ticketUpdated, this, &MyTicketsTab::loadTickets);
-}
 
+    connect(window, &TicketCard::ticketUpdated, this, &MyTicketsTab::loadTickets);
+
+    MainWindow* mw = qobject_cast<MainWindow*>(window->window());
+    if (mw && mw->profileTab) {
+        connect(window, &TicketCard::ticketUpdated, mw->profileTab, &ProfileTab::refreshStats);
+    }
+}
 
 void MyTicketsTab::loadTickets() {
     model->removeRows(0, model->rowCount());

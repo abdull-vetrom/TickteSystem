@@ -34,5 +34,6 @@ void MainWindow::setupTabs() {
         connect(projectsTab, &MyProjectsTab::ticketsInvalidated, ticketsTab, &MyTicketsTab::loadTickets);
     }
 
-    ui->tabWidget->addTab(new ProfileTab(currentUserId), "Мой профиль");
+    profileTab = new ProfileTab(currentUserId);
+    ui->tabWidget->addTab(profileTab, "Мой профиль");
 }

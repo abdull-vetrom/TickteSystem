@@ -19,6 +19,7 @@ public:
 
 signals:
     void ticketCreated();
+    void ticketSuccessfullyCreated();
 
 private slots:
     void on_confirmButton_clicked();

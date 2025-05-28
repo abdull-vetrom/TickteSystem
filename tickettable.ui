@@ -2,74 +2,93 @@
 <ui version="4.0">
  <class>TicketTableForm</class>
  <widget class="QWidget" name="TicketTableForm">
-  <layout class="QVBoxLayout" name="verticalLayout">
-
-  <item>
-   <widget class="QLabel" name="labelDone">
-    <property name="text">
-     <string>Текущие задачи</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">font-weight: bold; font-size: 14px;</string>
-    </property>
-   </widget>
-  </item>
-
-   <!-- Основная таблица -->
-   <item>
-    <widget class="QTableView" name="tableView">
-     <property name="styleSheet">
-      <string notr="true">
+  <property name="styleSheet">
+   <string notr="true">
 QTableView {
-    border: none;
-    gridline-color: black;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    font-size: 13px;
+    gridline-color: #d0d0d0;
+    selection-background-color: #cce4ff;
 }
 
 QHeaderView::section {
-    border: 1px solid black;
-    background: #f0f0f0;
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    padding: 4px;
     font-weight: bold;
+    font-size: 13px;
+    color: #333;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
 }
 
 QTableCornerButton::section {
     border: none;
 }
-      </string>
+   </string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+
+   <!-- Заголовок активных задач -->
+   <item>
+    <widget class="QLabel" name="labelCurrent">
+     <property name="text">
+      <string>Текущие задачи</string>
      </property>
-     <property name="showGrid">
-      <bool>true</bool>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
-     <property name="minimumSize">
-      <size>
-       <width>600</width>
-       <height>200</height>
-      </size>
+     <property name="styleSheet">
+      <string notr="true">font-size: 16px; font-weight: bold; margin: 6px;</string>
      </property>
     </widget>
    </item>
 
-   <!-- Отступ (фиксированная высота) -->
+   <!-- Центрированная основная таблица -->
+   <item>
+    <layout class="QHBoxLayout">
+     <item>
+      <spacer name="leftSpacer1">
+       <property name="orientation"><enum>Qt::Horizontal</enum></property>
+       <property name="sizeType"><enum>QSizePolicy::Expanding</enum></property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QTableView" name="tableView">
+       <property name="minimumSize">
+        <size>
+         <width>1000</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="showGrid">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="rightSpacer1">
+       <property name="orientation"><enum>Qt::Horizontal</enum></property>
+       <property name="sizeType"><enum>QSizePolicy::Expanding</enum></property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Отступ -->
    <item>
     <widget class="QWidget" name="spacerWidget">
      <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>5</height>
-      </size>
+      <size><width>0</width><height>8</height></size>
      </property>
      <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>5</height>
-      </size>
+      <size><width>16777215</width><height>8</height></size>
      </property>
     </widget>
    </item>
 
-   <!-- Заголовок завершённых -->
+   <!-- Заголовок завершённых задач -->
    <item>
     <widget class="QLabel" name="labelDone">
      <property name="text">
@@ -79,42 +98,40 @@ QTableCornerButton::section {
       <set>Qt::AlignCenter</set>
      </property>
      <property name="styleSheet">
-      <string notr="true">font-weight: bold; font-size: 14px;</string>
+      <string notr="true">font-size: 16px; font-weight: bold; margin: 6px;</string>
      </property>
     </widget>
    </item>
 
-   <!-- Таблица завершённых -->
+   <!-- Центрированная таблица завершённых -->
    <item>
-    <widget class="QTableView" name="doneTableView">
-     <property name="styleSheet">
-      <string notr="true">
-QTableView {
-    border: none;
-    gridline-color: black;
-}
-
-QHeaderView::section {
-    border: 1px solid black;
-    background: #f0f0f0;
-    font-weight: bold;
-}
-
-QTableCornerButton::section {
-    border: none;
-}
-      </string>
-     </property>
-     <property name="showGrid">
-      <bool>true</bool>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>600</width>
-       <height>200</height>
-      </size>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout">
+     <item>
+      <spacer name="leftSpacer2">
+       <property name="orientation"><enum>Qt::Horizontal</enum></property>
+       <property name="sizeType"><enum>QSizePolicy::Expanding</enum></property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QTableView" name="doneTableView">
+       <property name="minimumSize">
+        <size>
+         <width>1000</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="showGrid">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="rightSpacer2">
+       <property name="orientation"><enum>Qt::Horizontal</enum></property>
+       <property name="sizeType"><enum>QSizePolicy::Expanding</enum></property>
+      </spacer>
+     </item>
+    </layout>
    </item>
 
   </layout>

@@ -1,56 +1,41 @@
 #include "profiletab.h"
+#include "ui_profiletab.h"
+
 #include "utils.h"
 #include "storagemanager.h"
+#include "addemployeedialog.h"
 
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QtSql/QSqlQuery>
-#include <QtSql/QSqlError>
+#include <QSqlQuery>
+#include <QSqlError>
 #include <QPixmap>
 #include <QFileDialog>
-#include <QFile>
-#include <QDir>
-#include <QDebug>
+#include <QMessageBox>
+#include <QGroupBox>
+#include <QVBoxLayout>
+#include <QLabel>
 
-ProfileTab::ProfileTab(int userId, QWidget *parent)
-    : QWidget(parent), userId(userId) {
-    labelName = new QLabel(this);
-    labelEmail = new QLabel(this);
-    labelRole = new QLabel(this);
-    labelDept = new QLabel(this);
+ProfileTab::ProfileTab(int userId_, QWidget *parent)
+    : QWidget(parent), ui(new Ui::ProfileTab), userId(userId_) {
+    ui->setupUi(this);
 
-    labelName->setStyleSheet("font-weight: bold; font-size: 14px;");
-    labelEmail->setStyleSheet("font-size: 13px;");
-    labelRole->setStyleSheet("font-size: 13px;");
-    labelDept->setStyleSheet("font-size: 13px;");
+    ui->photoLabel->setFixedSize(180, 240);
+    ui->photoLabel->setAlignment(Qt::AlignCenter);
 
-    photoLabel = new QLabel(this);
-    photoLabel->setFixedSize(120, 120);
-    photoLabel->setStyleSheet("border: 1px solid gray; background: #f0f0f0;");
-    photoLabel->setAlignment(Qt::AlignCenter);
+    ui->addEmployeeButton->hide();  // скрыта по умолчанию
 
-    uploadPhotoButton = new QPushButton("Загрузить фото", this);
-    connect(uploadPhotoButton, &QPushButton::clicked, this, &ProfileTab::onUploadPhotoClicked);
+    connect(ui->uploadPhotoButton, &QPushButton::clicked,
+            this, &ProfileTab::onUploadPhotoClicked);
 
-    QVBoxLayout* photoLayout = new QVBoxLayout;
-    photoLayout->addWidget(photoLabel, 0, Qt::AlignHCenter);
-    photoLayout->addWidget(uploadPhotoButton, 0, Qt::AlignHCenter);
-    photoLayout->addStretch();
+    connect(ui->addEmployeeButton, &QPushButton::clicked, this, [this]() {
+        AddEmployeeDialog dlg(userId, this);
+        dlg.exec();
+    });
 
-    QVBoxLayout* infoLayout = new QVBoxLayout;
-    infoLayout->addWidget(labelName);
-    infoLayout->addWidget(labelEmail);
-    infoLayout->addWidget(labelRole);
-    infoLayout->addWidget(labelDept);
-    infoLayout->addStretch();
-
-    QHBoxLayout* mainLayout = new QHBoxLayout;
-    mainLayout->addLayout(infoLayout, 3);
-    mainLayout->addSpacing(20);
-    mainLayout->addLayout(photoLayout, 1);
-
-    setLayout(mainLayout);
     loadProfile();
+}
+
+ProfileTab::~ProfileTab() {
+    delete ui;
 }
 
 void ProfileTab::loadProfile() {
@@ -59,33 +44,101 @@ void ProfileTab::loadProfile() {
     query.prepare(sql);
     query.bindValue(":id", userId);
 
-    if (query.exec() && query.next()) {
-        QString firstName = query.value("first_name").toString();
-        QString middleName = query.value("middle_name").toString();
-        QString lastName  = query.value("last_name").toString();
-        QString email     = query.value("email").toString();
-        QString role      = query.value("role").toString();
-        QString department = query.value("department").toString();
-        QString photoPath = query.value("photo_path").toString();
-
-        labelName->setText("👤 ФИО: " + lastName + " " + firstName + " " + middleName);
-        labelEmail->setText("📧 Почта: " + email);
-        labelRole->setText("🛡️ Роль: " + role);
-        labelDept->setText("🏢 Отдел: " + department);
-
-        if (!photoPath.isEmpty()) {
-            QPixmap pix(StorageManager::getAbsolutePath(photoPath));
-            photoLabel->setPixmap(pix.scaled(photoLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        }
-    } else {
+    if (!query.exec() || !query.next()) {
         qDebug() << "Ошибка загрузки профиля:" << query.lastError().text();
+        return;
     }
+
+    QString firstName = query.value("first_name").toString();
+    QString middleName = query.value("middle_name").toString();
+    QString lastName  = query.value("last_name").toString();
+    QString email     = query.value("email").toString();
+    QString role      = query.value("role").toString();
+    QString department = query.value("department").toString();
+    QString photoPath = query.value("photo_path").toString();
+
+    userRole = role;
+
+    ui->labelName->setText("👤 ФИО: " + lastName + " " + firstName + " " + middleName);
+    ui->labelEmail->setText("📧 Почта: " + email);
+    ui->labelRole->setText("🛡️ Роль: " + role);
+    ui->labelDept->setText("🏢 Отдел: " + department);
+
+    if (!photoPath.isEmpty()) {
+        QPixmap pix(StorageManager::getAbsolutePath(photoPath));
+        ui->photoLabel->setPixmap(pix.scaled(ui->photoLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    }
+
+    loadStatusStats();
+    loadPriorityStats();
+
+    if (role == "начальник") {
+        loadProjectStats();
+        ui->addEmployeeButton->show();
+    }
+}
+
+void ProfileTab::loadStatusStats() {
+    QSqlQuery q;
+    q.prepare(loadSqlQuery(":/sql/getUserTicketCountByStatus.sql"));
+    q.bindValue(":userId", userId);
+    q.exec();
+
+    QGroupBox* box = new QGroupBox("Статистика по статусам");
+    QVBoxLayout* layout = new QVBoxLayout(box);
+
+    while (q.next()) {
+        layout->addWidget(new QLabel(QString("%1: %2")
+                                         .arg(q.value("status").toString(), q.value("count").toString())));
+    }
+
+    ui->statsLayout->addWidget(box);
+}
+
+void ProfileTab::loadPriorityStats() {
+    QSqlQuery q;
+    q.prepare(loadSqlQuery(":/sql/getUserTicketCountByPriority.sql"));
+    q.bindValue(":userId", userId);
+    q.exec();
+
+    QGroupBox* box = new QGroupBox("Статистика по приоритетам");
+    QVBoxLayout* layout = new QVBoxLayout(box);
+
+    while (q.next()) {
+        layout->addWidget(new QLabel(QString("%1: %2")
+                                         .arg(q.value("priority").toString(), q.value("count").toString())));
+    }
+
+    ui->statsLayout->addWidget(box);
+}
+
+void ProfileTab::loadProjectStats() {
+    QSqlQuery q;
+    q.prepare(loadSqlQuery(":/sql/getUserDepartmentProjectStats.sql"));
+    q.bindValue(":userId", userId);
+    q.exec();
+
+    QSqlQuery nameQuery;
+    nameQuery.prepare(loadSqlQuery(":/sql/getDepartmentNameByUser.sql"));
+    nameQuery.bindValue(":userId", userId);
+    nameQuery.exec();
+    nameQuery.next();
+
+    QString deptName = nameQuery.value("department_name").toString();
+    QGroupBox* box = new QGroupBox("Статистика по проектам (" + deptName + ")");
+    QVBoxLayout* layout = new QVBoxLayout(box);
+
+    while (q.next()) {
+        layout->addWidget(new QLabel(QString("%1: %2")
+                                         .arg(q.value("project").toString(), q.value("count").toString())));
+    }
+
+    ui->statsLayout->addWidget(box);
 }
 
 void ProfileTab::onUploadPhotoClicked() {
     QString fileName = QFileDialog::getOpenFileName(this, "Выбрать фото", "", "Images (*.png *.jpg *.jpeg)");
-    if (fileName.isEmpty())
-        return;
+    if (fileName.isEmpty()) return;
 
     QString relativePath = StorageManager::saveToStorage(fileName, "photos", QString("user_%1.png").arg(userId));
     if (relativePath.isEmpty()) {
@@ -98,12 +151,24 @@ void ProfileTab::onUploadPhotoClicked() {
     query.prepare(sql);
     query.bindValue(":path", relativePath);
     query.bindValue(":id", userId);
-
     if (!query.exec()) {
         qDebug() << "Ошибка сохранения фото:" << query.lastError().text();
         return;
     }
 
     QPixmap pix(StorageManager::getAbsolutePath(relativePath));
-    photoLabel->setPixmap(pix.scaled(photoLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    ui->photoLabel->setPixmap(pix.scaled(ui->photoLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+}
+
+void ProfileTab::refreshStats() {
+    QLayoutItem* child;
+    while ((child = ui->statsLayout->takeAt(0)) != nullptr) {
+        delete child->widget();
+        delete child;
+    }
+
+    loadStatusStats();
+    loadPriorityStats();
+    if (userRole == "начальник")
+        loadProjectStats();
 }
