@@ -30,7 +30,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         user.h user.cpp
         ticket.h ticket.cpp
         ticketcard.ui
-        myticketstab.h myticketstab.cpp
+        myticketstab.h myticketstab.cpp myticketstab.ui
         myprojectstab.h myprojectstab.cpp
         profiletab.h profiletab.cpp
         createticketdialog.h createticketdialog.cpp
@@ -46,6 +46,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         prioritydelegate.h prioritydelegate.cpp
         addemployeedialog.h addemployeedialog.cpp
         profiletab.ui
+        myprojectstab.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET TicketSystem APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
