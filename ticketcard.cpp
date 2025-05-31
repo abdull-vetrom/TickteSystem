@@ -17,42 +17,32 @@
 TicketCard::TicketCard(int ticketId, int userId, QTabWidget* tabWidget, QWidget* parent)
     : QWidget(parent), ticketId(ticketId), userId(userId), tabWidget(tabWidget) {
     ui.setupUi(this);
-    // ui.historyScrollArea->setWidget(ui.historyScrollContents);
 
     if (!ticket.load(ticketId)) {
         close();
         return;
     }
 
-    connect(ui.editButton, &QPushButton::clicked, this, &TicketCard::onEditClicked);
-    connect(ui.backButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
-    connect(ui.saveButton, &QPushButton::clicked, this, &TicketCard::onSaveClicked);
-    connect(ui.attachFileButton, &QPushButton::clicked, this, &TicketCard::onAttachFileClicked);
-    connect(ui.closeButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
-
-    bool ok1 = connect(ui.backButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
-    bool ok2 = connect(ui.closeButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
-    qDebug() << "[TicketCard] connect back:" << ok1 << "close:" << ok2;
-
+    // Устанавливаем заголовок тикета
     QString fullTitle = QString("№%1  <b>%2</b>  (<i>%3</i>)")
                             .arg(ticket.id)
                             .arg(ticket.title)
                             .arg(ticket.tracker);
-    ui.mainScrollArea->setWidget(ui.scrollContents);
     ui.ticketTitleLabel->setText(fullTitle);
     ui.ticketTitleLabel->setAlignment(Qt::AlignCenter);
-    ui.ticketTitleLabel->setStyleSheet("font-size: 16px; font-weight: bold;");
 
+    // Описание тикета
     ui.ticketDescription->setPlainText(ticket.description);
     ui.ticketDescription->setReadOnly(true);
     ui.ticketDescription->document()->setTextWidth(ui.ticketDescription->viewport()->width());
+
     int maxHeight = 150;
     int contentHeight = static_cast<int>(ui.ticketDescription->document()->size().height());
     int finalHeight = qMin(contentHeight + 10, maxHeight);
     ui.ticketDescription->setMinimumHeight(finalHeight);
     ui.ticketDescription->setMaximumHeight(finalHeight);
-    ui.ticketDescription->setStyleSheet("QTextEdit { background: transparent; border: none; }");
 
+    // Информация
     ui.labelProjectValue->setText(ticket.project);
     ui.labelTrackerValue->setText(ticket.tracker);
     ui.labelStatusValue->setText(ticket.status);
@@ -60,10 +50,18 @@ TicketCard::TicketCard(int ticketId, int userId, QTabWidget* tabWidget, QWidget*
     ui.labelAssignedValue->setText(ticket.assignee);
     ui.labelObserverValue->setText(ticket.watcher);
 
+    // Видимость редактирования
     ui.editPanel->setVisible(false);
     ui.editFooterPanel->setVisible(false);
     ui.attachFileButton->hide();
     ui.attachedFilesList->hide();
+
+    // Подключения
+    connect(ui.editButton, &QPushButton::clicked, this, &TicketCard::onEditClicked);
+    connect(ui.backButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
+    connect(ui.saveButton, &QPushButton::clicked, this, &TicketCard::onSaveClicked);
+    connect(ui.attachFileButton, &QPushButton::clicked, this, &TicketCard::onAttachFileClicked);
+    connect(ui.closeButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
 
     loadHistory();
     loadFiles();

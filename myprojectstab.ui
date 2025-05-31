@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MyProjectsTab</class>
+ <widget class="QWidget" name="MyProjectsTab">
+  <property name="styleSheet">
+   <string notr="true">
+    QWidget {
+        background-color: #ffffff;
+        font-family: 'Segoe UI', sans-serif;
+        color: #222;
+    }
+
+    QLabel {
+        font-size: 14px;
+        margin: 2px 0;
+    }
+
+    QPushButton {
+        padding: 6px 12px;
+        border: 1px solid #0078D7;
+        background-color: #0078D7;
+        color: white;
+        border-radius: 4px;
+    }
+
+    QPushButton:hover {
+        background-color: #005A9E;
+    }
+
+    QScrollArea {
+        border: none;
+    }
+   </string>
+  </property>
+
+  <layout class="QVBoxLayout" name="mainLayout">
+
+   <!-- Панель с кнопками -->
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <widget class="QPushButton" name="createProjectButton">
+       <property name="text">
+        <string>Создать проект</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="deleteProjectButton">
+       <property name="text">
+        <string>Удалить проект</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacerRight">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Область со скроллом -->
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollContent">
+      <layout class="QVBoxLayout" name="projectsLayout">
+       <property name="spacing">
+        <number>12</number>
+       </property>
+       <property name="leftMargin">
+        <number>10</number>
+       </property>
+       <property name="topMargin">
+        <number>10</number>
+       </property>
+       <property name="rightMargin">
+        <number>10</number>
+       </property>
+       <property name="bottomMargin">
+        <number>10</number>
+       </property>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

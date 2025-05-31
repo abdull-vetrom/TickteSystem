@@ -1,4 +1,5 @@
 #include "myticketstab.h"
+#include "ui_myticketstab.h"
 #include "createticketdialog.h"
 #include "utils.h"
 #include "ticketcard.h"
@@ -6,56 +7,63 @@
 #include "mainwindow.h"
 #include "profiletab.h"
 
-#include <QHeaderView>
-#include <QVBoxLayout>
-#include <QtSql/QSqlQuery>
-#include <QtSql/QSqlRecord>
-#include <QtSql/QSqlError>
-#include <QDebug>
-#include <QPushButton>
-#include <QTableView>
-#include <QMessageBox>
-#include <QDialog>
+#include <QSqlQuery>
+#include <QSqlError>
 #include <QStandardItemModel>
+#include <QMessageBox>
+#include <QHeaderView>
+#include <QDebug>
 
-MyTicketsTab::MyTicketsTab(int userId, const QString& role_, QTabWidget* tabWidget_, QWidget* parent)
+MyTicketsTab::MyTicketsTab(int userId_, const QString& role_, QTabWidget* tabWidget_, QWidget* parent)
     : QWidget(parent),
-    userId(userId),
-    role(role_),
+    ui(new Ui::MyTicketsTab),
+    userId(userId_),
     userRole(role_),
-    tabWidget(tabWidget_)  // ← сохраняем tabWidget
+    tabWidget(tabWidget_)
 {
-    ui.setupUi(this);
-
-    ui.labelDone->hide();
-    ui.doneTableView->hide();
+    ui->setupUi(this);
 
     model = new QStandardItemModel(this);
     model->setHorizontalHeaderLabels({"Название", "Проект", "Приоритет", "Статус"});
-    ui.tableView->setModel(model);
-    ui.tableView->horizontalHeader()->setStretchLastSection(true);
-    ui.tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui.tableView->verticalHeader()->setVisible(false);
+    ui->tableView->setModel(model);
+    ui->tableView->horizontalHeader()->setStretchLastSection(true);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->tableView->verticalHeader()->setVisible(false);
+    ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->tableView->setSelectionMode(QAbstractItemView::SingleSelection);
 
-    if (userRole == "начальник") {
-        createTicketButton = new QPushButton("Создать тикет", this);
-        layout()->addWidget(createTicketButton);
-        connect(createTicketButton, &QPushButton::clicked, this, &MyTicketsTab::onCreateTicketClicked);
+    connect(ui->tableView, &QTableView::clicked, this, &MyTicketsTab::onTicketClicked);
+
+    if (userRole != "начальник") {
+        ui->createTicketButton->hide();
+        ui->doneTableView->hide();
+        ui->labelDone->hide();
+    } else {
+        connect(ui->createTicketButton, &QPushButton::clicked, this, &MyTicketsTab::onCreateTicketClicked);
+
+        doneModel = new QStandardItemModel(this);
+        doneModel->setHorizontalHeaderLabels({"Название", "Проект", "Приоритет", "Статус"});
+        ui->doneTableView->setModel(doneModel);
+        ui->doneTableView->horizontalHeader()->setStretchLastSection(true);
+        ui->doneTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        ui->doneTableView->verticalHeader()->setVisible(false);
+        ui->doneTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+        ui->doneTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+        connect(ui->doneTableView, &QTableView::clicked, this, &MyTicketsTab::onTicketClicked);
     }
-
-    connect(ui.tableView, &QTableView::clicked, this, &MyTicketsTab::onTicketClicked);
-    connect(ui.doneTableView, &QTableView::clicked, this, &MyTicketsTab::onTicketClicked);
 
     loadTickets();
 }
 
+MyTicketsTab::~MyTicketsTab() {
+    delete ui;
+}
 
 void MyTicketsTab::onCreateTicketClicked() {
-    CreateTicketDialog *dialog = new CreateTicketDialog(userId, this);
+    CreateTicketDialog* dialog = new CreateTicketDialog(userId, this);
     connect(dialog, &CreateTicketDialog::ticketCreated, this, &MyTicketsTab::loadTickets);
 
-    MainWindow* mw = qobject_cast<MainWindow*>(window());
-    if (mw && mw->profileTab)
+    if (auto* mw = qobject_cast<MainWindow*>(window()); mw && mw->profileTab)
         connect(dialog, &CreateTicketDialog::ticketCreated, mw->profileTab, &ProfileTab::refreshStats);
 
     dialog->exec();
@@ -63,41 +71,34 @@ void MyTicketsTab::onCreateTicketClicked() {
 }
 
 void MyTicketsTab::onTicketClicked(const QModelIndex& index) {
-    if (!index.isValid())
-        return;
+    if (!index.isValid()) return;
 
     int row = index.row();
-    const QAbstractItemModel* sourceModel = index.model();
+    const QAbstractItemModel* source = index.model();
 
     int ticketId = -1;
-    if (sourceModel == model) {
+    if (source == model)
         ticketId = model->item(row, 0)->data(Qt::UserRole).toInt();
-    } else if (sourceModel == doneModel) {
+    else if (doneModel && source == doneModel)
         ticketId = doneModel->item(row, 0)->data(Qt::UserRole).toInt();
-    }
 
-    if (ticketId < 0)
-        return;
+    if (ticketId < 0) return;
 
-    TicketCard* window = new TicketCard(ticketId, userId, tabWidget, this);
-    tabWidget->addTab(window, "Просмотр тикета");
-    tabWidget->setCurrentWidget(window);
+    TicketCard* card = new TicketCard(ticketId, userId, tabWidget, this);
+    tabWidget->addTab(card, QString("Тикет #%1").arg(ticketId));
+    tabWidget->setCurrentWidget(card);
 
-    connect(window, &TicketCard::ticketUpdated, this, &MyTicketsTab::loadTickets);
+    connect(card, &TicketCard::ticketUpdated, this, &MyTicketsTab::loadTickets);
 
-    MainWindow* mw = qobject_cast<MainWindow*>(window->window());
-    if (mw && mw->profileTab) {
-        connect(window, &TicketCard::ticketUpdated, mw->profileTab, &ProfileTab::refreshStats);
-    }
+    if (auto* mw = qobject_cast<MainWindow*>(card->window()); mw && mw->profileTab)
+        connect(card, &TicketCard::ticketUpdated, mw->profileTab, &ProfileTab::refreshStats);
 }
 
 void MyTicketsTab::loadTickets() {
     model->removeRows(0, model->rowCount());
 
     QSqlQuery query;
-    QString sql = loadSqlQuery(":/sql/getUserTickets.sql");
-
-    query.prepare(sql);
+    query.prepare(loadSqlQuery(":/sql/getUserTickets.sql"));
     query.bindValue(":userId", userId);
 
     if (!query.exec()) {
@@ -105,8 +106,7 @@ void MyTicketsTab::loadTickets() {
         return;
     }
 
-    QList<QList<QStandardItem*>> unsortedRows;
-
+    QList<QList<QStandardItem*>> rows;
     QMap<QString, int> priorityOrder = {
         {"Немедленный", 0},
         {"Высокий", 1},
@@ -116,7 +116,7 @@ void MyTicketsTab::loadTickets() {
 
     while (query.next()) {
         int ticketId = query.value(0).toInt();
-        QString priorityValue = query.value(3).toString();
+        QString priority = query.value(3).toString();
 
         QList<QStandardItem*> row;
         for (int i = 1; i <= 4; ++i) {
@@ -125,51 +125,32 @@ void MyTicketsTab::loadTickets() {
             row.append(item);
         }
 
-        int order = priorityOrder.value(priorityValue, 99);
+        int order = priorityOrder.value(priority, 99);
         row.first()->setData(order, Qt::UserRole + 1);
-        unsortedRows.append(row);
+        rows.append(row);
     }
 
-    std::sort(unsortedRows.begin(), unsortedRows.end(), [](const QList<QStandardItem*>& a, const QList<QStandardItem*>& b) {
+    std::sort(rows.begin(), rows.end(), [](const QList<QStandardItem*>& a, const QList<QStandardItem*>& b) {
         return a.first()->data(Qt::UserRole + 1).toInt() < b.first()->data(Qt::UserRole + 1).toInt();
     });
 
-    for (const QList<QStandardItem*>& row : unsortedRows)
+    for (const QList<QStandardItem*>& row : rows)
         model->appendRow(row);
 
-    ui.tableView->setItemDelegate(new PriorityDelegate(this));
+    ui->tableView->setItemDelegate(new PriorityDelegate(this));
 
-    // ===== Дополнительная таблица "Завершённые задачи" =====
-    if (userRole != "начальник") {
-        ui.doneTableView->hide();
-        ui.labelDone->hide();
-        return;
-    }
+    if (userRole != "начальник") return;
 
-    // Подготовка модели
-    if (!doneModel)
-        doneModel = new QStandardItemModel(this);
-
-    doneModel->clear();
-    doneModel->setHorizontalHeaderLabels({"Название", "Проект", "Приоритет", "Статус"});
-    ui.doneTableView->setModel(doneModel);
-
-    // Настройки внешнего вида, как у основной таблицы
-    ui.doneTableView->horizontalHeader()->setStretchLastSection(true);
-    ui.doneTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui.doneTableView->verticalHeader()->setVisible(false);
-    ui.doneTableView->setShowGrid(true);
-    ui.doneTableView->setAlternatingRowColors(false);
+    doneModel->removeRows(0, doneModel->rowCount());
 
     QSqlQuery doneQuery;
-    QString doneSql = loadSqlQuery(":/sql/getUserDoneTickets.sql");
-    doneQuery.prepare(doneSql);
+    doneQuery.prepare(loadSqlQuery(":/sql/getUserDoneTickets.sql"));
     doneQuery.bindValue(":userId", userId);
 
     if (doneQuery.exec()) {
         while (doneQuery.next()) {
             QList<QStandardItem*> row;
-            int ticketId = doneQuery.value(0).toInt();  // <- важно: сохраняем ID
+            int ticketId = doneQuery.value(0).toInt();
             for (int i = 1; i <= 4; ++i) {
                 QStandardItem* item = new QStandardItem(doneQuery.value(i).toString());
                 item->setBackground(QColor("#E8E8E8"));
@@ -177,7 +158,7 @@ void MyTicketsTab::loadTickets() {
                     QFont font = item->font();
                     font.setStrikeOut(true);
                     item->setFont(font);
-                    item->setData(ticketId, Qt::UserRole);  // <- сохраняем ID в название
+                    item->setData(ticketId, Qt::UserRole);
                 }
                 row.append(item);
             }
@@ -185,9 +166,6 @@ void MyTicketsTab::loadTickets() {
         }
     }
 
-    ui.labelDone->show();
-    ui.doneTableView->show();
+    ui->labelDone->show();
+    ui->doneTableView->show();
 }
-
-
-

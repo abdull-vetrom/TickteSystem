@@ -2,15 +2,17 @@
 #define MYPROJECTSTAB_H
 
 #include <QWidget>
-#include <QPushButton>
-#include <QScrollArea>
-#include <QVBoxLayout>
 #include <QTabWidget>
+
+namespace Ui {
+class MyProjectsTab;
+}
 
 class MyProjectsTab : public QWidget {
     Q_OBJECT
 public:
-    MyProjectsTab(int userId, const QString& role, QTabWidget* tabWidget, QWidget *parent = nullptr);
+    explicit MyProjectsTab(int userId, const QString& role, QTabWidget* tabWidget, QWidget *parent = nullptr);
+    ~MyProjectsTab();
 
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
@@ -20,16 +22,11 @@ private slots:
     void onDeleteProjectClicked();
 
 private:
+    Ui::MyProjectsTab* ui;
+
     int userId;
     QString userRole;
     QTabWidget* tabWidget;
-
-    QPushButton* createProjectButton;
-    QPushButton* deleteProjectButton;
-
-    QScrollArea* scrollArea;
-    QWidget* scrollContent;
-    QVBoxLayout* projectsLayout;
 
     void loadProjects();
 

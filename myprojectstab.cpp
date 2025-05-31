@@ -1,55 +1,45 @@
 #include "myprojectstab.h"
+#include "ui_myprojectstab.h"
 #include "utils.h"
 #include "createprojectdialog.h"
 #include "ticketcard.h"
 
-#include <QVBoxLayout>
-#include <QGroupBox>
-#include <QScrollArea>
-#include <QLabel>
 #include <QMessageBox>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
-#include <QEvent>
-#include <QMouseEvent>
 #include <QInputDialog>
+#include <QEvent>
+#include <QLabel>
 
-MyProjectsTab::MyProjectsTab(int userId, const QString& role, QTabWidget* tabWidget_, QWidget *parent)
-    : QWidget(parent), userId(userId), userRole(role), tabWidget(tabWidget_) {
+MyProjectsTab::MyProjectsTab(int userId_, const QString& role, QTabWidget* tabWidget_, QWidget *parent)
+    : QWidget(parent),
+    ui(new Ui::MyProjectsTab),
+    userId(userId_),
+    userRole(role),
+    tabWidget(tabWidget_)
+{
+    ui->setupUi(this);
 
-    auto* mainLayout = new QVBoxLayout(this);
-    auto* buttonLayout = new QHBoxLayout;
-
-    if (userRole == "начальник") {
-        createProjectButton = new QPushButton("Создать проект", this);
-        deleteProjectButton = new QPushButton("Удалить проект", this);
-        buttonLayout->addWidget(createProjectButton);
-        buttonLayout->addWidget(deleteProjectButton);
-
-        connect(createProjectButton, &QPushButton::clicked, this, &MyProjectsTab::onCreateProjectClicked);
-        connect(deleteProjectButton, &QPushButton::clicked, this, &MyProjectsTab::onDeleteProjectClicked);
+    if (userRole != "начальник") {
+        ui->createProjectButton->hide();
+        ui->deleteProjectButton->hide();
+    } else {
+        connect(ui->createProjectButton, &QPushButton::clicked, this, &MyProjectsTab::onCreateProjectClicked);
+        connect(ui->deleteProjectButton, &QPushButton::clicked, this, &MyProjectsTab::onDeleteProjectClicked);
     }
-
-    scrollArea = new QScrollArea(this);
-    scrollContent = new QWidget;
-    scrollArea->setWidgetResizable(true);
-    scrollArea->setWidget(scrollContent);
-
-    projectsLayout = new QVBoxLayout(scrollContent);
-    projectsLayout->setSpacing(12);
-    projectsLayout->setContentsMargins(10, 10, 10, 10);
-
-    mainLayout->addLayout(buttonLayout);
-    mainLayout->addWidget(scrollArea);
 
     loadProjects();
 }
 
+MyProjectsTab::~MyProjectsTab() {
+    delete ui;
+}
+
 void MyProjectsTab::loadProjects() {
     QLayoutItem* item;
-    while ((item = projectsLayout->takeAt(0)) != nullptr) {
-        delete item->widget();
+    while ((item = ui->projectsLayout->takeAt(0)) != nullptr) {
+        if (QWidget* w = item->widget()) delete w;
         delete item;
     }
 
@@ -124,10 +114,10 @@ void MyProjectsTab::loadProjects() {
             toggleButton->setText(isVisible ? "📁" : "📂");
         });
 
-        projectsLayout->addWidget(projectWidget);
+        ui->projectsLayout->addWidget(projectWidget);
     }
 
-    projectsLayout->addStretch();
+    ui->projectsLayout->addStretch();
 }
 
 bool MyProjectsTab::eventFilter(QObject* obj, QEvent* event) {
@@ -154,22 +144,13 @@ void MyProjectsTab::onCreateProjectClicked() {
         loadProjects();
     }
 }
+
 void MyProjectsTab::onDeleteProjectClicked() {
     bool ok;
-    QString projectName = QInputDialog::getText(
-        this,
-        "Удаление проекта",
-        "Введите название проекта для удаления:",
-        QLineEdit::Normal,
-        "",
-        &ok
-        );
+    QString projectName = QInputDialog::getText(this, "Удаление проекта", "Введите название проекта для удаления:",
+                                                QLineEdit::Normal, "", &ok);
+    if (!ok || projectName.trimmed().isEmpty()) return;
 
-    if (!ok || projectName.trimmed().isEmpty()) {
-        return; // Отмена или пустой ввод
-    }
-
-    // Получаем projectId по имени
     QSqlQuery idQuery;
     QString idSql = loadSqlQuery(":/sql/getProjectIdByName.sql");
     idQuery.prepare(idSql);
@@ -183,7 +164,6 @@ void MyProjectsTab::onDeleteProjectClicked() {
         return;
     }
 
-    // Получаем тикеты проекта
     QSqlQuery query;
     QString sql = loadSqlQuery(":/sql/getTicketsByProject.sql");
     query.prepare(sql);
@@ -199,21 +179,15 @@ void MyProjectsTab::onDeleteProjectClicked() {
         }
     }
 
-    QMessageBox::StandardButton reply = QMessageBox::question(
-        this,
-        "Подтверждение удаления",
-        QString("Вы уверены, что хотите удалить проект \"%1\"?\n\n"
-                "Данному проекту принадлежат следующие тикеты:\n\n%2")
-            .arg(projectName)
-            .arg(ticketList.isEmpty() ? "(Нет тикетов)" : ticketList),
-        QMessageBox::Yes | QMessageBox::No
-        );
+    QMessageBox::StandardButton reply = QMessageBox::question(this, "Подтверждение удаления",
+                                                              QString("Вы уверены, что хотите удалить проект \"%1\"?\n\n"
+                                                                      "Данному проекту принадлежат следующие тикеты:\n\n%2")
+                                                                  .arg(projectName)
+                                                                  .arg(ticketList.isEmpty() ? "(Нет тикетов)" : ticketList),
+                                                              QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes)
-        return;
+    if (reply != QMessageBox::Yes) return;
 
-    // Удаление проекта
-    // Удаляем зависимые сущности вручную
     QStringList deletionSteps = {
         ":/sql/deleteTicketHistoryByProject.sql",
         ":/sql/deleteTicketFilesByProject.sql",
@@ -233,8 +207,5 @@ void MyProjectsTab::onDeleteProjectClicked() {
     }
 
     loadProjects();
-
     emit ticketsInvalidated();
 }
-
-

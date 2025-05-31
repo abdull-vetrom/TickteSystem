@@ -3,8 +3,7 @@
 #include <QWidget>
 #include <QTabWidget>
 #include <QMap>
-#include <QLabel>
-#include <QEvent>
+#include <QStringList>
 #include "ui_ticketcard.h"
 #include "ticket.h"
 
@@ -32,6 +31,8 @@ private:
     QMap<QString, int> trackerMap;
 
     void addFileLabel(const QString& fileName);
+    void loadHistory();
+    void loadFiles();
     bool eventFilter(QObject* obj, QEvent* event) override;
 
 private slots:
@@ -39,6 +40,4 @@ private slots:
     void onBackClicked();
     void onSaveClicked();
     void onAttachFileClicked();
-    void loadHistory();
-    void loadFiles();
 };

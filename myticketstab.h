@@ -2,17 +2,19 @@
 #define MYTICKETSTAB_H
 
 #include <QWidget>
-#include <QStandardItemModel>
-#include <QString>
-#include <QPushButton>
 #include <QTabWidget>
+#include <QStandardItemModel>
 
-#include "ui_tickettable.h"
+namespace Ui {
+class MyTicketsTab;
+}
 
 class MyTicketsTab : public QWidget {
     Q_OBJECT
+
 public:
-    MyTicketsTab(int userId, const QString& role_, QTabWidget* tabWidget, QWidget* parent = nullptr);
+    explicit MyTicketsTab(int userId, const QString& role, QTabWidget* tabWidget, QWidget* parent = nullptr);
+    ~MyTicketsTab();
     void loadTickets();
 
 private slots:
@@ -20,14 +22,13 @@ private slots:
     void onTicketClicked(const QModelIndex& index);
 
 private:
+    Ui::MyTicketsTab* ui;
+
     int userId;
     QString userRole;
-    QString role;
-    QStandardItemModel* model;
-    QTabWidget* tabWidget = nullptr;
+    QTabWidget* tabWidget;
 
-    Ui::TicketTableForm ui;
-    QPushButton* createTicketButton;
+    QStandardItemModel* model = nullptr;
     QStandardItemModel* doneModel = nullptr;
 };
 
