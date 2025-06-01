@@ -67,6 +67,10 @@ void ProfileTab::loadProfile() {
     if (!photoPath.isEmpty()) {
         QPixmap pix(StorageManager::getAbsolutePath(photoPath));
         ui->photoLabel->setPixmap(pix.scaled(ui->photoLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        ui->photoLabel->setText("");
+    } else {
+        ui->photoLabel->setText("Нет фото\nЗагрузите изображение");
+        ui->photoLabel->setStyleSheet("QLabel { border: 1px dashed #aaa; color: #666; font-style: italic; }");
     }
 
     loadStatusStats();
@@ -84,7 +88,7 @@ void ProfileTab::loadStatusStats() {
     q.bindValue(":userId", userId);
     q.exec();
 
-    QGroupBox* box = new QGroupBox("Статистика по статусам");
+    QGroupBox* box = new QGroupBox("Статистика задач (по статусам)");
     QVBoxLayout* layout = new QVBoxLayout(box);
 
     while (q.next()) {
@@ -101,7 +105,7 @@ void ProfileTab::loadPriorityStats() {
     q.bindValue(":userId", userId);
     q.exec();
 
-    QGroupBox* box = new QGroupBox("Статистика по приоритетам");
+    QGroupBox* box = new QGroupBox("Статистика задач (по приоритетам)");
     QVBoxLayout* layout = new QVBoxLayout(box);
 
     while (q.next()) {

@@ -34,10 +34,12 @@ private:
     void loadHistory();
     void loadFiles();
     bool eventFilter(QObject* obj, QEvent* event) override;
+    QString stripHtmlTags(const QString& html);
 
 private slots:
     void onEditClicked();
     void onBackClicked();
     void onSaveClicked();
     void onAttachFileClicked();
+    void onSavePdfClicked();
 };

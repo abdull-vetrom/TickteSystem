@@ -361,7 +361,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `email` (`email`),
   KEY `department_id` (`department_id`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -372,7 +372,8 @@ LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 INSERT INTO `users` VALUES
 (1,'Тагир','Ренатович','Абдуллин','123','123','начальник',1,'Тагир Абдуллин','photos/user_1.png'),
-(2,'Игорь','Сизов','Михайлович','6','6','начальник',1,'Сизов Игорь Михайлович',NULL);
+(2,'Игорь','Сизов','Михайлович','6','6','начальник',1,'Сизов Игорь Михайлович',NULL),
+(3,'5545454','545454','545454','8899','8899','распределитель',1,'545454 5545454 545454',NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -389,4 +390,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2025-05-31 21:08:49
+-- Dump completed on 2025-06-01  0:08:54

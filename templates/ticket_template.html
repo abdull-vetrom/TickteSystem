@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            color: #222;
+            margin: 20px;
+        }
+
+        h2 {
+            font-size: 20px;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .info {
+            margin-bottom: 10px;
+        }
+
+        .history-section {
+            margin-top: 30px;
+        }
+
+        .history-block {
+            border: 1px solid black;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .history-header {
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .history-comment {
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Тикет №{{id}}: {{title}} ({{tracker}})</h2>
+
+<div class="info"><span class="label">Описание:</span><br>{{description}}</div>
+
+<div class="info">
+    <span class="label">Проект:</span> {{project}}<br>
+    <span class="label">Трекер:</span> {{tracker}}<br>
+    <span class="label">Статус:</span> {{status}}<br>
+    <span class="label">Приоритет:</span> {{priority}}<br>
+    <span class="label">Назначена:</span> {{assignee}}<br>
+    <span class="label">Наблюдатель:</span> {{watcher}}
+</div>
+
+<div class="history-section">
+    <h3>История изменений</h3>
+    {{history}}
+</div>
+
+</body>
+</html>

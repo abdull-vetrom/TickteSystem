@@ -84,6 +84,16 @@ QTextEdit[readOnly="true"] {
          </spacer>
         </item>
         <item>
+         <widget class="QPushButton" name="pdfButton">
+          <property name="text">
+           <string>📄</string>
+          </property>
+          <property name="toolTip">
+           <string>Скачать pdf-тикет</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="closeButton">
           <property name="text">
            <string>❌</string>
