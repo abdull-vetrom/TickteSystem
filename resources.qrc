@@ -39,4 +39,7 @@
         <file>app_icon.png</file>
         <file>logo.png</file>
     </qresource>
+    <qresource prefix="/templates">
+        <file>templates/ticket_template.html</file>
+    </qresource>
 </RCC>

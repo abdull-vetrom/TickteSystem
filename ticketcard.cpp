@@ -13,6 +13,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QTimer>
+#include <QtPrintSupport/QPrinter>
 
 TicketCard::TicketCard(int ticketId, int userId, QTabWidget* tabWidget, QWidget* parent)
     : QWidget(parent), ticketId(ticketId), userId(userId), tabWidget(tabWidget) {
@@ -62,6 +63,7 @@ TicketCard::TicketCard(int ticketId, int userId, QTabWidget* tabWidget, QWidget*
     connect(ui.saveButton, &QPushButton::clicked, this, &TicketCard::onSaveClicked);
     connect(ui.attachFileButton, &QPushButton::clicked, this, &TicketCard::onAttachFileClicked);
     connect(ui.closeButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
+    connect(ui.pdfButton, &QPushButton::clicked, this, &TicketCard::onSavePdfClicked);
 
     loadHistory();
     loadFiles();
@@ -445,3 +447,96 @@ bool TicketCard::eventFilter(QObject* obj, QEvent* event) {
     }
     return QWidget::eventFilter(obj, event);
 }
+
+QString TicketCard::stripHtmlTags(const QString& html) {
+    QString text = html;
+    text.replace(QRegularExpression("<[^>]*>"), "");
+    text.replace("&nbsp;", " ");
+    text.replace("&lt;", "<");
+    text.replace("&gt;", ">");
+    text.replace("&amp;", "&");
+    text.replace("<br>", "\n", Qt::CaseInsensitive);
+    return text;
+}
+
+void TicketCard::onSavePdfClicked() {
+    QString filePath = QFileDialog::getSaveFileName(this, "Сохранить как PDF", "ticket.pdf", "PDF files (*.pdf)");
+    if (filePath.isEmpty())
+        return;
+
+    QFile file(":/templates/templates/ticket_template.html");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Ошибка", "Не удалось загрузить HTML шаблон");
+        return;
+    }
+
+    QString htmlTemplate = QString::fromUtf8(file.readAll());
+    file.close();
+
+    QString historyHtml;
+    QSqlQuery query;
+    QString sql = loadSqlQuery(":/sql/getTicketHistoryByTicketId.sql");
+    query.prepare(sql);
+    query.bindValue(":ticketId", ticketId);
+    if (query.exec()) {
+        while (query.next()) {
+            QString user = query.value("user").toString();
+            QDateTime dt = query.value("changed_at").toDateTime();
+            QString summaryRaw = stripHtmlTags(query.value("changes_summary").toString());
+            QStringList lines;
+
+            // Разбиваем изменения по параметрам
+            const QString marker = "Параметр ";
+            for (const QString& part : summaryRaw.split(marker, Qt::SkipEmptyParts)) {
+                lines << "<div>Параметр " + part.trimmed() + "</div>";
+            }
+
+            QString formattedSummary = lines.join("\n");
+
+            QString comment = stripHtmlTags(query.value("comment").toString());
+            QString commentBlock;
+            if (!comment.isEmpty()) {
+                commentBlock = QString("<div class='history-comment'>%1</div>").arg(comment.toHtmlEscaped());
+            }
+
+            historyHtml.prepend(QString(R"(
+                <div class="history-block">
+                    <div class="history-header">%1 <span style="color:gray;">(%2)</span></div>
+                    <div>%3</div>
+                    %4
+                </div>
+            )")
+                                    .arg(user.toHtmlEscaped(),
+                                         dt.toString("dd.MM.yyyy HH:mm"),
+                                         formattedSummary,
+                                         commentBlock));
+        }
+    }
+
+    QMap<QString, QString> values = {
+        {"{{id}}", QString::number(ticket.id)},
+        {"{{title}}", ticket.title.toHtmlEscaped()},
+        {"{{tracker}}", ticket.tracker.toHtmlEscaped()},
+        {"{{description}}", ticket.description.toHtmlEscaped()},
+        {"{{project}}", ticket.project.toHtmlEscaped()},
+        {"{{status}}", ticket.status.toHtmlEscaped()},
+        {"{{priority}}", ticket.priority.toHtmlEscaped()},
+        {"{{assignee}}", ticket.assignee.toHtmlEscaped()},
+        {"{{watcher}}", ticket.watcher.toHtmlEscaped()},
+        {"{{history}}", historyHtml}
+    };
+
+    for (auto it = values.constBegin(); it != values.constEnd(); ++it)
+        htmlTemplate.replace(it.key(), it.value());
+
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOutputFileName(filePath);
+    printer.setPageMargins(QMarginsF(10, 10, 10, 10));
+
+    QTextDocument doc;
+    doc.setHtml(htmlTemplate);
+    doc.print(&printer);
+}
+
+
