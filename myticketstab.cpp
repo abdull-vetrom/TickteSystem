@@ -36,21 +36,21 @@ MyTicketsTab::MyTicketsTab(int userId_, const QString& role_, QTabWidget* tabWid
 
     if (userRole != "начальник") {
         ui->createTicketButton->hide();
-        ui->doneTableView->hide();
-        ui->labelDone->hide();
+        // ui->doneTableView->hide();
+        // ui->labelDone->hide();
     } else {
         connect(ui->createTicketButton, &QPushButton::clicked, this, &MyTicketsTab::onCreateTicketClicked);
-
-        doneModel = new QStandardItemModel(this);
-        doneModel->setHorizontalHeaderLabels({"Название", "Проект", "Приоритет", "Статус"});
-        ui->doneTableView->setModel(doneModel);
-        ui->doneTableView->horizontalHeader()->setStretchLastSection(true);
-        ui->doneTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-        ui->doneTableView->verticalHeader()->setVisible(false);
-        ui->doneTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-        ui->doneTableView->setSelectionMode(QAbstractItemView::SingleSelection);
-        connect(ui->doneTableView, &QTableView::clicked, this, &MyTicketsTab::onTicketClicked);
     }
+
+    doneModel = new QStandardItemModel(this);
+    doneModel->setHorizontalHeaderLabels({"Название", "Проект", "Приоритет", "Статус"});
+    ui->doneTableView->setModel(doneModel);
+    ui->doneTableView->horizontalHeader()->setStretchLastSection(true);
+    ui->doneTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->doneTableView->verticalHeader()->setVisible(false);
+    ui->doneTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->doneTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    connect(ui->doneTableView, &QTableView::clicked, this, &MyTicketsTab::onTicketClicked);
 
     loadTickets();
 }
@@ -144,7 +144,7 @@ void MyTicketsTab::loadTickets() {
 
     ui->tableView->setItemDelegate(new PriorityDelegate(this));
 
-    if (userRole != "начальник") return;
+    // if (userRole != "начальник") return;
 
     doneModel->removeRows(0, doneModel->rowCount());
 

@@ -1,6 +1,6 @@
 SELECT
-	id
+    id
 FROM
-	projects
+    projects
 WHERE
-	name = :name
+    name = :name

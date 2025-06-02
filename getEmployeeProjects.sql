@@ -1,6 +1,6 @@
-SELECT
-    id,
-    DISTINCT p.name
+SELECT DISTINCT
+    p.id,
+    p.name
 FROM
     tickets t
 JOIN projects p ON

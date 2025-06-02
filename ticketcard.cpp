@@ -66,6 +66,7 @@ TicketCard::TicketCard(int ticketId, int userId, QTabWidget* tabWidget, QWidget*
     connect(ui.attachFileButton, &QPushButton::clicked, this, &TicketCard::onAttachFileClicked);
     connect(ui.closeButton, &QPushButton::clicked, this, &TicketCard::onBackClicked);
     connect(ui.pdfButton, &QPushButton::clicked, this, &TicketCard::onSavePdfClicked);
+    connect(ui.completeButton, &QPushButton::clicked, this, &TicketCard::onCompleteClicked);
 
     loadHistory();
     loadFiles();
@@ -337,16 +338,28 @@ void TicketCard::loadHistory() {
         QVBoxLayout* historyItemLayout = new QVBoxLayout(historyItemWidget);
         historyItemLayout->setContentsMargins(8, 8, 8, 8);
 
-        // Верхний блок: ФИО, дата, изменения
         QLabel* topLabel = new QLabel(
             QString("<b>%1</b> <span style='color:gray'>(%2)</span><br>%3")
                 .arg(user, formattedTime, summary)
             );
         topLabel->setWordWrap(true);
         topLabel->setTextFormat(Qt::RichText);
+        topLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);  // Важно
+        topLabel->setOpenExternalLinks(false);                          // Обрабатываем вручную
         topLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         topLabel->setStyleSheet("background: #f5f5f5; border: 1px solid #ccc; border-radius: 5px; padding: 6px;");
         historyItemLayout->addWidget(topLabel);
+
+        connect(topLabel, &QLabel::linkActivated, this, [this](const QString& link) {
+            QString sql = loadSqlQuery(":/sql/getTicketFilePath.sql");
+            QSqlQuery q;
+            q.prepare(sql);
+            q.bindValue(":ticketId", ticketId);
+            q.bindValue(":fileName", link);
+            if (q.exec() && q.next()) {
+                StorageManager::downloadTo(q.value("relative_path").toString(), this);
+            }
+        });
 
         if (!comment.isEmpty()) {
             QTextEdit* commentText = new QTextEdit(comment);
@@ -356,19 +369,10 @@ void TicketCard::loadHistory() {
             commentText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
             commentText->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
             commentText->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-            // Установка ширины текста
             commentText->document()->setTextWidth(commentText->viewport()->width());
-
-            // Расчёт высоты содержимого
             int calculatedHeight = int(commentText->document()->size().height()) + 12;
-
-            // Гарантируем минимальную высоту (например, 40px)
-            int finalHeight = std::max(calculatedHeight, 60);
-
-            commentText->setMinimumHeight(finalHeight);
-            commentText->setMaximumHeight(finalHeight);
-
+            commentText->setMinimumHeight(std::max(calculatedHeight, 60));
+            commentText->setMaximumHeight(std::max(calculatedHeight, 60));
             historyItemLayout->addWidget(commentText);
         }
 
@@ -377,11 +381,8 @@ void TicketCard::loadHistory() {
 
     for (QWidget* w : blocks)
         ui.historyLayout->addWidget(w);
-
-    // ui.historyScrollArea->setWidget(ui.historyScrollContents);
-    // if (QScrollBar* bar = ui.historyScrollArea->verticalScrollBar())
-    //     bar->setValue(bar->minimum());
 }
+
 
 void TicketCard::loadFiles() {
     // Очистка layout
@@ -557,4 +558,53 @@ void TicketCard::reloadTicketDetailsFromDatabase() {
     ticket.priority = query.value("priority").toString();
     ticket.assignee = query.value("assignee").toString();   // ФИО
     ticket.watcher = query.value("watcher").toString();     // ФИО
+}
+
+void TicketCard::onCompleteClicked() {
+    QString newStatus = "Завершён";
+    if (ticket.status == newStatus)
+        return; // Уже завершён
+
+    int statusId = -1;
+    QString sql = loadSqlQuery(":/sql/getStatusesIdAndName.sql");
+    QSqlQuery statusQuery(sql);
+    while (statusQuery.next()) {
+        if (statusQuery.value("name").toString() == newStatus) {
+            statusId = statusQuery.value("id").toInt();
+            break;
+        }
+    }
+
+    if (statusId == -1) {
+        QMessageBox::warning(this, "Ошибка", "Статус 'Завершён' не найден в базе.");
+        return;
+    }
+
+    sql = loadSqlQuery(":/sql/updateTicketStatusOnly.sql");  // создайте такой SQL: update tickets set status_id = :statusId where id = :ticketId
+    QSqlQuery updateQuery;
+    updateQuery.prepare(sql);
+    updateQuery.bindValue(":statusId", statusId);
+    updateQuery.bindValue(":ticketId", ticketId);
+    if (!updateQuery.exec()) {
+        QMessageBox::critical(this, "Ошибка", "Не удалось обновить статус тикета.");
+        return;
+    }
+
+    // История
+    QString change = QString("Параметр <b>Статус</b> изменился с <i>%1</i> на <b>%2</b>").arg(ticket.status, newStatus);
+    sql = loadSqlQuery(":/sql/saveTicketHistory.sql");
+    QSqlQuery histQuery;
+    histQuery.prepare(sql);
+    histQuery.bindValue(":ticketId", ticketId);
+    histQuery.bindValue(":userId", userId);
+    histQuery.bindValue(":summary", change);
+    histQuery.bindValue(":comment", "");
+    histQuery.bindValue(":changedAt", QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss"));
+    histQuery.exec();
+
+    ticket.status = newStatus;
+    ui.labelStatusValue->setText(newStatus);
+    loadHistory();
+
+    emit ticketUpdated();
 }

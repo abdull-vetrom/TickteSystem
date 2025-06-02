@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QTabBar>
 
 #include "myticketstab.h"
 #include "myprojectstab.h"
@@ -22,19 +23,35 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::setupTabs() {
-    // Сохраняем тикет-таб для дальнейшего доступа
+    ui->tabWidget->setTabsClosable(true); // Включаем крестики глобально
+
+    connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, [this](int index) {
+        QWidget *tab = ui->tabWidget->widget(index);
+        if (tab == ticketsTab || tab == projectsTab || tab == profileTab)
+            return;
+
+        ui->tabWidget->removeTab(index);
+        delete tab;
+    });
+
     ticketsTab = new MyTicketsTab(currentUserId, currentUserRole, ui->tabWidget, this);
-    ui->tabWidget->addTab(ticketsTab, "Мои тикеты");
+    int ticketsIndex = ui->tabWidget->addTab(ticketsTab, "Мои тикеты");
 
     if (currentUserRole == "начальник" || currentUserRole == "работник") {
         projectsTab = new MyProjectsTab(currentUserId, currentUserRole, ui->tabWidget);
-        ui->tabWidget->addTab(projectsTab, "Мои проекты");
+        int projectsIndex = ui->tabWidget->addTab(projectsTab, "Мои проекты");
 
-        // Подключаем сигнал обновления тикетов
         connect(projectsTab, &MyProjectsTab::ticketsInvalidated, ticketsTab, &MyTicketsTab::loadTickets);
         connect(ticketsTab, &MyTicketsTab::ticketsChanged, projectsTab, &MyProjectsTab::loadProjects);
+
+        // Убираем крестик
+        ui->tabWidget->tabBar()->setTabButton(projectsIndex, QTabBar::RightSide, nullptr);
     }
 
     profileTab = new ProfileTab(currentUserId);
-    ui->tabWidget->addTab(profileTab, "Мой профиль");
+    int profileIndex = ui->tabWidget->addTab(profileTab, "Мой профиль");
+
+    // Убираем крестики с базовых вкладок
+    ui->tabWidget->tabBar()->setTabButton(ticketsIndex, QTabBar::RightSide, nullptr);
+    ui->tabWidget->tabBar()->setTabButton(profileIndex, QTabBar::RightSide, nullptr);
 }

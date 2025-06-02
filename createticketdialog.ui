@@ -16,7 +16,6 @@
    <item row="0" column="1">
     <widget class="QComboBox" name="projectCombo"/>
    </item>
-
    <item row="1" column="0">
     <widget class="QLabel" name="labelTracker">
      <property name="text">
@@ -27,7 +26,6 @@
    <item row="1" column="1">
     <widget class="QComboBox" name="trackerCombo"/>
    </item>
-
    <item row="2" column="0">
     <widget class="QLabel" name="labelStatus">
      <property name="text">
@@ -38,7 +36,6 @@
    <item row="2" column="1">
     <widget class="QComboBox" name="statusCombo"/>
    </item>
-
    <item row="3" column="0">
     <widget class="QLabel" name="labelPriority">
      <property name="text">
@@ -49,7 +46,6 @@
    <item row="3" column="1">
     <widget class="QComboBox" name="priorityCombo"/>
    </item>
-
    <item row="4" column="0">
     <widget class="QLabel" name="labelAssignee">
      <property name="text">
@@ -60,7 +56,6 @@
    <item row="4" column="1">
     <widget class="QComboBox" name="assigneeCombo"/>
    </item>
-
    <item row="5" column="0">
     <widget class="QLabel" name="labelWatcher">
      <property name="text">
@@ -71,7 +66,6 @@
    <item row="5" column="1">
     <widget class="QComboBox" name="watcherCombo"/>
    </item>
-
    <item row="6" column="0">
     <widget class="QLabel" name="labelStartDate">
      <property name="text">
@@ -86,7 +80,6 @@
      </property>
     </widget>
    </item>
-
    <item row="7" column="0">
     <widget class="QLabel" name="labelTitle">
      <property name="text">
@@ -97,31 +90,37 @@
    <item row="7" column="1">
     <widget class="QLineEdit" name="titleEdit"/>
    </item>
-
    <item row="8" column="0">
+    <widget class="QLabel" name="labelTags">
+     <property name="text">
+      <string>Теги</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QLineEdit" name="tagEdit"/>
+   </item>
+   <item row="9" column="0">
     <widget class="QLabel" name="labelDescription">
      <property name="text">
       <string>Описание</string>
      </property>
     </widget>
    </item>
-   <item row="8" column="1">
+   <item row="9" column="1">
     <widget class="QPlainTextEdit" name="descriptionEdit"/>
    </item>
-
-   <item row="9" column="0">
+   <item row="10" column="0">
     <widget class="QLabel" name="labelFiles">
      <property name="text">
       <string>Файлы</string>
      </property>
     </widget>
    </item>
-
-   <item row="10" column="0" colspan="2">
+   <item row="11" column="0" colspan="2">
     <layout class="QVBoxLayout" name="attachedFilesLayout"/>
    </item>
-
-   <item row="11" column="0" colspan="2">
+   <item row="12" column="0" colspan="2">
     <layout class="QHBoxLayout" name="buttonLayout">
      <item>
       <widget class="QPushButton" name="confirmButton">
@@ -146,7 +145,6 @@
      </item>
     </layout>
    </item>
-
   </layout>
  </widget>
  <resources/>
