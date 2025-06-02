@@ -68,11 +68,13 @@ void MyProjectsTab::loadProjects() {
         QVBoxLayout* projectLayout = new QVBoxLayout(projectWidget);
         projectLayout->setContentsMargins(0, 0, 0, 0);
 
-        QPushButton* toggleButton = new QPushButton("📁");
+        QPushButton* toggleButton = new QPushButton;
+        toggleButton->setIcon(QIcon(":/icons/folder_closed.png"));
+        toggleButton->setIconSize(QSize(16, 16));
+        toggleButton->setFixedSize(24, 24);
         toggleButton->setFlat(true);
         toggleButton->setCursor(Qt::PointingHandCursor);
-        toggleButton->setStyleSheet("QPushButton { border: none; font-size: 16px; }");
-
+        toggleButton->setStyleSheet("QPushButton { background-color: transparent; border: none; }");
         QLabel* titleLabel = new QLabel("<b>" + projectName + "</b>");
         QHBoxLayout* headerLayout = new QHBoxLayout;
         headerLayout->addWidget(toggleButton);
@@ -115,7 +117,7 @@ void MyProjectsTab::loadProjects() {
         connect(toggleButton, &QPushButton::clicked, this, [=]() mutable {
             bool isVisible = ticketsContainer->isVisible();
             ticketsContainer->setVisible(!isVisible);
-            toggleButton->setText(isVisible ? "📁" : "📂");
+            toggleButton->setIcon(QIcon(isVisible ? ":/icons/folder_closed.png" : ":/icons/folder_open.png"));
         });
 
         ui->projectsLayout->addWidget(projectWidget);
@@ -123,6 +125,7 @@ void MyProjectsTab::loadProjects() {
 
     ui->projectsLayout->addStretch();
 }
+
 
 void MyProjectsTab::loadEmployees() {
     QLayoutItem* item;
@@ -163,16 +166,23 @@ void MyProjectsTab::loadEmployees() {
         QWidget* headerWidget = new QWidget;
         QHBoxLayout* layout = new QHBoxLayout(headerWidget);
 
-        QPushButton* toggleButton = new QPushButton("📁");
+        QPushButton* toggleButton = new QPushButton;
+        toggleButton->setIcon(QIcon(":/icons/folder_closed.png"));
+        toggleButton->setIconSize(QSize(16, 16));
+        toggleButton->setFixedSize(24, 24);
         toggleButton->setFlat(true);
         toggleButton->setCursor(Qt::PointingHandCursor);
-        toggleButton->setFixedWidth(24);
+        toggleButton->setStyleSheet("QPushButton { background-color: transparent; border: none; }");
 
         QLabel* empLabel = new QLabel(QString("%1 (%2)").arg(fullName, role));
 
-        QPushButton* editButton = new QPushButton("✎");
+        QPushButton* editButton = new QPushButton;
+        editButton->setIcon(QIcon(":/icons/edit.png"));
+        editButton->setIconSize(QSize(16, 16));
         editButton->setFixedSize(24, 24);
+        editButton->setFlat(true);
         editButton->setCursor(Qt::PointingHandCursor);
+        editButton->setStyleSheet("QPushButton { background-color: transparent; border: none; }");
 
         layout->addWidget(toggleButton);
         layout->addWidget(empLabel);
@@ -191,7 +201,7 @@ void MyProjectsTab::loadEmployees() {
         connect(toggleButton, &QPushButton::clicked, this, [=]() mutable {
             bool isVisible = ticketList->isVisible();
             ticketList->setVisible(!isVisible);
-            toggleButton->setText(isVisible ? "📁" : "📂");
+            toggleButton->setIcon(QIcon(isVisible ? ":/icons/folder_closed.png" : ":/icons/folder_open.png"));
 
             if (!isVisible && ticketLayout->isEmpty()) {
                 QSqlQuery tQuery;
@@ -229,6 +239,7 @@ void MyProjectsTab::loadEmployees() {
 
     ui->employeesLayout->addStretch();
 }
+
 
 
 bool MyProjectsTab::eventFilter(QObject* obj, QEvent* event) {

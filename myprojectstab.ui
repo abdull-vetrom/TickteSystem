@@ -2,6 +2,35 @@
 <ui version="4.0">
  <class>MyProjectsTab</class>
  <widget class="QWidget" name="MyProjectsTab">
+  <property name="styleSheet">
+   <string notr="true">
+    QWidget {
+        background-color: #ffffff;
+        font-family: 'Segoe UI', sans-serif;
+        color: #222;
+    }
+
+    QPushButton {
+        padding: 6px 12px;
+        border: 1px solid #0078D7;
+        background-color: #0078D7;
+        color: white;
+        border-radius: 4px;
+        icon-size: 16px 16px; /* размер иконки */
+    }
+    QPushButton:hover {
+        background-color: #005A9E;
+    }
+
+    QScrollArea {
+        border: none;
+    }
+
+    QLabel {
+        font-size: 14px;
+    }
+   </string>
+  </property>
   <property name="windowTitle">
    <string>MyProjectsTab</string>
   </property>

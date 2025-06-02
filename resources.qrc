@@ -40,6 +40,7 @@
         <file>updateUserProfile.sql</file>
         <file>getEmployeesByDepartment.sql</file>
         <file>getTicketsByEmployee.sql</file>
+        <file>getStatusesWithoutEnding.sql</file>
     </qresource>
     <qresource prefix="/templates">
         <file>templates/ticket_template.html</file>
@@ -47,5 +48,8 @@
     <qresource prefix="/icons">
         <file>app_icon.png</file>
         <file>logo.png</file>
+        <file>folder_closed.png</file>
+        <file>folder_open.png</file>
+        <file>edit.png</file>
     </qresource>
 </RCC>
