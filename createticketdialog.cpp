@@ -11,6 +11,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QLabel>
+#include <QDesktopServices>
 
 CreateTicketDialog::CreateTicketDialog(int currentUserId, QWidget *parent)
     : QDialog(parent), ui(new Ui::CreateTicketDialog), userId(currentUserId) {
@@ -84,12 +85,21 @@ void CreateTicketDialog::updateWatchersByProject() {
 
 void CreateTicketDialog::on_confirmButton_clicked() {
     QString title = ui->titleEdit->text().trimmed();
+    QString tags = ui->tagEdit->text().trimmed();
     QString description = ui->descriptionEdit->toPlainText();
 
     if (title.isEmpty()) {
         showError("Введите название тикета.");
         return;
     }
+
+    // Форматирование тегов
+    QStringList tagList = tags.split(',', Qt::SkipEmptyParts);
+    for (QString& tag : tagList)
+        tag = "#" + tag.trimmed();
+    QString fullTitle = title;
+    if (!tagList.isEmpty())
+        fullTitle += " " + tagList.join(" ");
 
     int projectId = ui->projectCombo->currentData().toInt();
     int trackerId = ui->trackerCombo->currentData().toInt();
@@ -102,7 +112,7 @@ void CreateTicketDialog::on_confirmButton_clicked() {
     QString sql = loadSqlQuery(":/sql/saveTicket.sql");
     QSqlQuery query;
     query.prepare(sql);
-    query.bindValue(":title", title);
+    query.bindValue(":title", fullTitle);
     query.bindValue(":description", description);
     query.bindValue(":projectId", projectId);
     query.bindValue(":trackerId", trackerId);
@@ -159,9 +169,28 @@ void CreateTicketDialog::on_attachBtn_clicked() {
 
 void CreateTicketDialog::addFileLabel(const QString &fileName) {
     QLabel *label = new QLabel(QString("<b><font color='blue'>%1</font></b>").arg(fileName));
-    label->setStyleSheet("QLabel:hover { text-decoration: underline; }");
     label->setCursor(Qt::PointingHandCursor);
+    label->setStyleSheet("QLabel:hover { text-decoration: underline; }");
+    label->setProperty("fileName", fileName);
+    label->installEventFilter(this);  // Важно
+
     ui->attachedFilesLayout->addWidget(label);
+}
+
+bool CreateTicketDialog::eventFilter(QObject *obj, QEvent *event) {
+    if (event->type() == QEvent::MouseButtonRelease) {
+        QLabel *label = qobject_cast<QLabel *>(obj);
+        if (label) {
+            const QString fileName = label->property("fileName").toString();
+
+            // Путь должен быть точный, как в TicketCard
+            const QString relativePath = "ticketFiles/" + fileName;
+            StorageManager::downloadTo(relativePath, this);
+
+            return true;
+        }
+    }
+    return QDialog::eventFilter(obj, event);
 }
 
 void CreateTicketDialog::showError(const QString &msg) {

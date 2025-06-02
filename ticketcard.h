@@ -44,4 +44,5 @@ private slots:
     void onSaveClicked();
     void onAttachFileClicked();
     void onSavePdfClicked();
+    void onCompleteClicked();
 };

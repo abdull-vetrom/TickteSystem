@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QSqlDatabase>
 #include <QStringList>
+#include <QLabel>
 
 namespace Ui {
 class CreateTicketDialog;
@@ -36,6 +37,8 @@ private:
     void populateCombos();
     void showError(const QString &msg);
     void addFileLabel(const QString &fileName);
+    bool eventFilter(QObject *obj, QEvent *event) override;
+    QMap<QLabel*, QString> clickableLabels;
 };
 
 #endif // CREATETICKETDIALOG_H

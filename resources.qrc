@@ -41,6 +41,7 @@
         <file>getEmployeesByDepartment.sql</file>
         <file>getTicketsByEmployee.sql</file>
         <file>getStatusesWithoutEnding.sql</file>
+        <file>updateTicketStatusOnly.sql</file>
     </qresource>
     <qresource prefix="/templates">
         <file>templates/ticket_template.html</file>

@@ -68,47 +68,53 @@ QTextEdit[readOnly="true"] {
       <layout class="QVBoxLayout" name="scrollLayout">
 
        <item>
-       <layout class="QHBoxLayout">
-        <item>
-         <widget class="QLabel" name="ticketTitleLabel">
-          <property name="text"><string>Заголовок тикета</string></property>
-          <property name="alignment"><set>Qt::AlignLeft | Qt::AlignVCenter</set></property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation"><enum>Qt::Horizontal</enum></property>
-          <property name="sizeHint" stdset="0">
-           <size><width>40</width><height>20</height></size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pdfButton">
-          <property name="text">
-           <string>📄</string>
-          </property>
-          <property name="toolTip">
-           <string>Скачать pdf-тикет</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="closeButton">
-          <property name="text">
-           <string>❌</string>
-          </property>
-          <property name="toolTip">
-           <string>Закрыть</string>
-          </property>
-         </widget>
-        </item>
-
-       </layout>
+        <layout class="QHBoxLayout">
+         <item>
+          <widget class="QLabel" name="ticketTitleLabel">
+           <property name="text"><string>Заголовок тикета</string></property>
+           <property name="alignment"><set>Qt::AlignLeft | Qt::AlignVCenter</set></property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation"><enum>Qt::Horizontal</enum></property>
+           <property name="sizeHint" stdset="0">
+            <size><width>40</width><height>20</height></size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pdfButton">
+           <property name="text"><string>📄</string></property>
+           <property name="toolTip"><string>Скачать pdf-тикет</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="closeButton">
+           <property name="text"><string>❌</string></property>
+           <property name="toolTip"><string>Закрыть</string></property>
+          </widget>
+         </item>
+        </layout>
        </item>
 
-       <item><widget class="QPushButton" name="editButton"><property name="text"><string>Редактировать</string></property></widget></item>
-       <item><widget class="QTextEdit" name="ticketDescription"><property name="readOnly"><bool>true</bool></property></widget></item>
+       <item>
+        <widget class="QPushButton" name="editButton">
+         <property name="text"><string>Редактировать</string></property>
+        </widget>
+       </item>
+
+       <item>
+        <widget class="QPushButton" name="completeButton">
+         <property name="text"><string>Завершить задачу</string></property>
+        </widget>
+       </item>
+
+       <item>
+        <widget class="QTextEdit" name="ticketDescription">
+         <property name="readOnly"><bool>true</bool></property>
+        </widget>
+       </item>
 
        <item>
         <widget class="QGroupBox" name="infoBox">
