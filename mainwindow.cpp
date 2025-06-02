@@ -27,11 +27,12 @@ void MainWindow::setupTabs() {
     ui->tabWidget->addTab(ticketsTab, "Мои тикеты");
 
     if (currentUserRole == "начальник" || currentUserRole == "работник") {
-        MyProjectsTab* projectsTab = new MyProjectsTab(currentUserId, currentUserRole, ui->tabWidget);
+        projectsTab = new MyProjectsTab(currentUserId, currentUserRole, ui->tabWidget);
         ui->tabWidget->addTab(projectsTab, "Мои проекты");
 
         // Подключаем сигнал обновления тикетов
         connect(projectsTab, &MyProjectsTab::ticketsInvalidated, ticketsTab, &MyTicketsTab::loadTickets);
+        connect(ticketsTab, &MyTicketsTab::ticketsChanged, projectsTab, &MyProjectsTab::loadProjects);
     }
 
     profileTab = new ProfileTab(currentUserId);

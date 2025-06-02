@@ -63,8 +63,13 @@ void MyTicketsTab::onCreateTicketClicked() {
     CreateTicketDialog* dialog = new CreateTicketDialog(userId, this);
     connect(dialog, &CreateTicketDialog::ticketCreated, this, &MyTicketsTab::loadTickets);
 
-    if (auto* mw = qobject_cast<MainWindow*>(window()); mw && mw->profileTab)
-        connect(dialog, &CreateTicketDialog::ticketCreated, mw->profileTab, &ProfileTab::refreshStats);
+    if (auto* mw = qobject_cast<MainWindow*>(window())) {
+        if (mw->profileTab)
+            connect(dialog, &CreateTicketDialog::ticketCreated, mw->profileTab, &ProfileTab::refreshStats);
+
+        if (mw->projectsTab)
+            connect(dialog, &CreateTicketDialog::ticketCreated, mw->projectsTab, &MyProjectsTab::loadProjects);
+    }
 
     dialog->exec();
     delete dialog;

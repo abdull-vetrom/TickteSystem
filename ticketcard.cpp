@@ -24,6 +24,8 @@ TicketCard::TicketCard(int ticketId, int userId, QTabWidget* tabWidget, QWidget*
         return;
     }
 
+    reloadTicketDetailsFromDatabase();
+
     // Устанавливаем заголовок тикета
     QString fullTitle = QString("№%1  <b>%2</b>  (<i>%3</i>)")
                             .arg(ticket.id)
@@ -506,10 +508,10 @@ void TicketCard::onSavePdfClicked() {
                     %4
                 </div>
             )")
-                                    .arg(user.toHtmlEscaped(),
-                                         dt.toString("dd.MM.yyyy HH:mm"),
-                                         formattedSummary,
-                                         commentBlock));
+            .arg(user.toHtmlEscaped(),
+                 dt.toString("dd.MM.yyyy HH:mm"),
+                 formattedSummary,
+                 commentBlock));
         }
     }
 
@@ -539,4 +541,20 @@ void TicketCard::onSavePdfClicked() {
     doc.print(&printer);
 }
 
+void TicketCard::reloadTicketDetailsFromDatabase() {
+    QString sql = loadSqlQuery(":/sql/getFullTicketInfoById.sql");
+    QSqlQuery query;
+    query.prepare(sql);
+    query.bindValue(":ticketId", ticketId);
+    if (!query.exec() || !query.next()) {
+        qWarning() << "Ошибка загрузки тикета по id:" << query.lastError().text();
+        return;
+    }
 
+    ticket.project = query.value("project").toString();
+    ticket.tracker = query.value("tracker").toString();
+    ticket.status = query.value("status").toString();
+    ticket.priority = query.value("priority").toString();
+    ticket.assignee = query.value("assignee").toString();   // ФИО
+    ticket.watcher = query.value("watcher").toString();     // ФИО
+}

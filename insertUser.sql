@@ -13,7 +13,7 @@ VALUES (
     :last,
     :middle,
     :email,
-    :password,
+    SHA2(:password, 256),
     :role,
     :dept,
     :full

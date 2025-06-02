@@ -15,9 +15,11 @@ public:
 
 public slots:
     void refreshStats();
+    void reloadPersonalInfo();
 
 private slots:
     void onUploadPhotoClicked();
+    void onEditProfileClicked();
 
 private:
     Ui::ProfileTab* ui;

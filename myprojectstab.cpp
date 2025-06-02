@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "createprojectdialog.h"
 #include "ticketcard.h"
+#include "editemployeedialog.h"
 
 #include <QMessageBox>
 #include <QSqlQuery>
@@ -11,6 +12,8 @@
 #include <QInputDialog>
 #include <QEvent>
 #include <QLabel>
+#include <QPushButton>
+#include <QHBoxLayout>
 
 MyProjectsTab::MyProjectsTab(int userId_, const QString& role, QTabWidget* tabWidget_, QWidget *parent)
     : QWidget(parent),
@@ -27,6 +30,7 @@ MyProjectsTab::MyProjectsTab(int userId_, const QString& role, QTabWidget* tabWi
     } else {
         connect(ui->createProjectButton, &QPushButton::clicked, this, &MyProjectsTab::onCreateProjectClicked);
         connect(ui->deleteProjectButton, &QPushButton::clicked, this, &MyProjectsTab::onDeleteProjectClicked);
+        loadEmployees();  // Загрузка сотрудников отдела
     }
 
     loadProjects();
@@ -119,6 +123,113 @@ void MyProjectsTab::loadProjects() {
 
     ui->projectsLayout->addStretch();
 }
+
+void MyProjectsTab::loadEmployees() {
+    QLayoutItem* item;
+    while ((item = ui->employeesLayout->takeAt(0)) != nullptr) {
+        if (QWidget* w = item->widget()) delete w;
+        delete item;
+    }
+
+    QSqlQuery empQuery;
+    QString empSql = loadSqlQuery(":/sql/getEmployeesByDepartment.sql");
+    empQuery.prepare(empSql);
+    empQuery.bindValue(":userId", userId);
+
+    if (!empQuery.exec()) {
+        qDebug() << "Ошибка запроса сотрудников:" << empQuery.lastError().text();
+        ui->employeesLayout->addWidget(new QLabel("Ошибка загрузки сотрудников"));
+        return;
+    }
+
+    if (!empQuery.next()) {
+        ui->employeesLayout->addWidget(new QLabel("Сотрудники не найдены"));
+        return;
+    }
+
+    QString deptName = empQuery.value("department_name").toString();
+    QLabel* deptLabel = new QLabel("Отдел: <b>" + deptName + "</b>");
+    ui->employeesLayout->addWidget(deptLabel);
+
+    do {
+        int empId = empQuery.value("id").toInt();
+        QString fullName = empQuery.value("last_name").toString() + " " + empQuery.value("first_name").toString();
+        QString role = empQuery.value("role").toString();
+
+        QWidget* empWidget = new QWidget;
+        QVBoxLayout* empVBox = new QVBoxLayout(empWidget);
+        empVBox->setContentsMargins(0, 0, 0, 0);
+
+        QWidget* headerWidget = new QWidget;
+        QHBoxLayout* layout = new QHBoxLayout(headerWidget);
+
+        QPushButton* toggleButton = new QPushButton("📁");
+        toggleButton->setFlat(true);
+        toggleButton->setCursor(Qt::PointingHandCursor);
+        toggleButton->setFixedWidth(24);
+
+        QLabel* empLabel = new QLabel(QString("%1 (%2)").arg(fullName, role));
+
+        QPushButton* editButton = new QPushButton("✎");
+        editButton->setFixedSize(24, 24);
+        editButton->setCursor(Qt::PointingHandCursor);
+
+        layout->addWidget(toggleButton);
+        layout->addWidget(empLabel);
+        layout->addStretch();
+        layout->addWidget(editButton);
+
+        empVBox->addWidget(headerWidget);
+
+        QWidget* ticketList = new QWidget;
+        QVBoxLayout* ticketLayout = new QVBoxLayout(ticketList);
+        ticketLayout->setContentsMargins(15, 5, 5, 5);
+        ticketList->setVisible(false);
+
+        empVBox->addWidget(ticketList);
+
+        connect(toggleButton, &QPushButton::clicked, this, [=]() mutable {
+            bool isVisible = ticketList->isVisible();
+            ticketList->setVisible(!isVisible);
+            toggleButton->setText(isVisible ? "📁" : "📂");
+
+            if (!isVisible && ticketLayout->isEmpty()) {
+                QSqlQuery tQuery;
+                QString ticketSql = loadSqlQuery(":/sql/getTicketsByEmployee.sql");
+                tQuery.prepare(ticketSql);
+                tQuery.bindValue(":userId", empId);
+
+                if (tQuery.exec()) {
+                    while (tQuery.next()) {
+                        int ticketId = tQuery.value("id").toInt();
+                        QString title = tQuery.value("title").toString();
+                        QString tracker = tQuery.value("tracker").toString();
+
+                        QLabel* ticketLabel = new QLabel(QString("#%1 | %2 [%3]").arg(ticketId).arg(title).arg(tracker));
+                        ticketLabel->setCursor(Qt::PointingHandCursor);
+                        ticketLabel->setStyleSheet("QLabel:hover { text-decoration: underline; }");
+                        ticketLabel->setProperty("ticketId", ticketId);
+                        ticketLabel->installEventFilter(this);
+                        ticketLayout->addWidget(ticketLabel);
+                    }
+                } else {
+                    ticketLayout->addWidget(new QLabel("⚠ Ошибка загрузки тикетов"));
+                }
+            }
+        });
+
+        connect(editButton, &QPushButton::clicked, this, [=]() {
+            EditEmployeeDialog dialog(empId, this);
+            dialog.exec();
+            loadEmployees();
+        });
+
+        ui->employeesLayout->addWidget(empWidget);
+    } while (empQuery.next());
+
+    ui->employeesLayout->addStretch();
+}
+
 
 bool MyProjectsTab::eventFilter(QObject* obj, QEvent* event) {
     if (event->type() == QEvent::MouseButtonRelease) {

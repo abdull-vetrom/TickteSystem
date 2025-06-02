@@ -6,4 +6,4 @@ FROM
     ticket_system.users
 WHERE
     email = :email
-    AND password = :password
+    AND password = SHA2(:password, 256)

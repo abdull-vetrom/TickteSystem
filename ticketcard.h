@@ -36,6 +36,8 @@ private:
     bool eventFilter(QObject* obj, QEvent* event) override;
     QString stripHtmlTags(const QString& html);
 
+    void reloadTicketDetailsFromDatabase();
+
 private slots:
     void onEditClicked();
     void onBackClicked();
