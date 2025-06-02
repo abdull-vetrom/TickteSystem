@@ -83,7 +83,28 @@
      <!-- Информация -->
      <item>
       <layout class="QVBoxLayout" name="infoLayout">
-       <item><widget class="QLabel" name="labelName"/></item>
+       <item>
+        <layout class="QHBoxLayout" name="nameLayout">
+         <item><widget class="QLabel" name="labelName"/></item>
+         <item>
+          <widget class="QPushButton" name="editProfileButton">
+           <property name="text">
+            <string>Изменить</string>
+           </property>
+           <property name="toolTip">
+            <string>Редактировать профиль</string>
+           </property>
+           <property name="maximumWidth">
+            <number>100</number>
+           </property>
+          </widget>
+         </item>
+         <item><spacer name="nameSpacer">
+          <property name="orientation"><enum>Qt::Horizontal</enum></property>
+          <property name="sizeType"><enum>QSizePolicy::Expanding</enum></property>
+         </spacer></item>
+        </layout>
+       </item>
        <item><widget class="QLabel" name="labelEmail"/></item>
        <item><widget class="QLabel" name="labelRole"/></item>
        <item><widget class="QLabel" name="labelDept"/></item>
@@ -96,7 +117,6 @@
        </spacer></item>
       </layout>
      </item>
-
     </layout>
    </item>
 

@@ -8,6 +8,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
+#include <QRegularExpression>
 #include "utils.h"
 
 AddEmployeeDialog::AddEmployeeDialog(int managerId_, QWidget* parent)
@@ -23,7 +24,7 @@ AddEmployeeDialog::AddEmployeeDialog(int managerId_, QWidget* parent)
     passwordEdit->setEchoMode(QLineEdit::Password);
 
     roleCombo = new QComboBox(this);
-    roleCombo->addItems({"распределитель", "начальник", "работник"});
+    roleCombo->addItems({"распределитель", "работник"});
 
     addButton = new QPushButton("Добавить", this);
 
@@ -52,6 +53,17 @@ void AddEmployeeDialog::onAddClicked() {
 
     if (first.isEmpty() || last.isEmpty() || email.isEmpty() || password.isEmpty()) {
         QMessageBox::warning(this, "Ошибка", "Пожалуйста, заполните все обязательные поля.");
+        return;
+    }
+
+    if (!email.contains('@')) {
+        QMessageBox::warning(this, "Ошибка", "Неверный формат почты. Адрес должен содержать символ '@'.");
+        return;
+    }
+
+    QRegularExpression passwordRegex("^[A-Za-z0-9]{6,}$");
+    if (!passwordRegex.match(password).hasMatch()) {
+        QMessageBox::warning(this, "Ошибка", "Пароль должен содержать только латинские буквы и цифры, без специальных символов, и быть длиной от 6 символов.");
         return;
     }
 

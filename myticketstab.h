@@ -30,6 +30,9 @@ private:
 
     QStandardItemModel* model = nullptr;
     QStandardItemModel* doneModel = nullptr;
+
+signals:
+    void ticketsChanged();
 };
 
 #endif // MYTICKETSTAB_H

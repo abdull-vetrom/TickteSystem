@@ -34,12 +34,22 @@
         <file>getDepartmentNameByUser.sql</file>
         <file>getDepartmentIdByUserId.sql</file>
         <file>insertUser.sql</file>
+        <file>getUserInfoForEdit.sql</file>
+        <file>getUserPasswordHash.sql</file>
+        <file>updateUserPassword.sql</file>
+        <file>updateUserProfile.sql</file>
+        <file>getEmployeesByDepartment.sql</file>
+        <file>getTicketsByEmployee.sql</file>
+        <file>getStatusesWithoutEnding.sql</file>
+    </qresource>
+    <qresource prefix="/templates">
+        <file>templates/ticket_template.html</file>
     </qresource>
     <qresource prefix="/icons">
         <file>app_icon.png</file>
         <file>logo.png</file>
-    </qresource>
-    <qresource prefix="/templates">
-        <file>templates/ticket_template.html</file>
+        <file>folder_closed.png</file>
+        <file>folder_open.png</file>
+        <file>edit.png</file>
     </qresource>
 </RCC>

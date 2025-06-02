@@ -40,7 +40,7 @@ void CreateTicketDialog::populateCombos() {
     while (query.next())
         ui->trackerCombo->addItem(query.value("name").toString(), query.value("id"));
 
-    sql = loadSqlQuery(":/sql/getStatusesIdAndName.sql");
+    sql = loadSqlQuery(":/sql/getStatusesWithoutEnding.sql");
     query.exec(sql);
     while (query.next())
         ui->statusCombo->addItem(query.value("name").toString(), query.value("id"));

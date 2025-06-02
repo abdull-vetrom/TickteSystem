@@ -13,6 +13,7 @@ class MyProjectsTab : public QWidget {
 public:
     explicit MyProjectsTab(int userId, const QString& role, QTabWidget* tabWidget, QWidget *parent = nullptr);
     ~MyProjectsTab();
+    void loadProjects();
 
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
@@ -22,13 +23,13 @@ private slots:
     void onDeleteProjectClicked();
 
 private:
+    void loadEmployees();
+
     Ui::MyProjectsTab* ui;
 
     int userId;
     QString userRole;
     QTabWidget* tabWidget;
-
-    void loadProjects();
 
 signals:
     void ticketsInvalidated();

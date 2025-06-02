@@ -10,19 +10,14 @@
         color: #222;
     }
 
-    QLabel {
-        font-size: 14px;
-        margin: 2px 0;
-    }
-
     QPushButton {
         padding: 6px 12px;
         border: 1px solid #0078D7;
         background-color: #0078D7;
         color: white;
         border-radius: 4px;
+        icon-size: 16px 16px; /* размер иконки */
     }
-
     QPushButton:hover {
         background-color: #005A9E;
     }
@@ -30,12 +25,16 @@
     QScrollArea {
         border: none;
     }
+
+    QLabel {
+        font-size: 14px;
+    }
    </string>
   </property>
-
+  <property name="windowTitle">
+   <string>MyProjectsTab</string>
+  </property>
   <layout class="QVBoxLayout" name="mainLayout">
-
-   <!-- Панель с кнопками -->
    <item>
     <layout class="QHBoxLayout" name="buttonLayout">
      <item>
@@ -60,39 +59,51 @@
        <property name="sizeType">
         <enum>QSizePolicy::Expanding</enum>
        </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
       </spacer>
      </item>
     </layout>
    </item>
-
-   <!-- Область со скроллом -->
    <item>
-    <widget class="QScrollArea" name="scrollArea">
-     <property name="widgetResizable">
-      <bool>true</bool>
+    <layout class="QHBoxLayout" name="contentLayout">
+     <property name="spacing">
+      <number>6</number>
      </property>
-     <widget class="QWidget" name="scrollContent">
-      <layout class="QVBoxLayout" name="projectsLayout">
-       <property name="spacing">
-        <number>12</number>
+     <item>
+      <widget class="QScrollArea" name="scrollArea">
+       <property name="widgetResizable">
+        <bool>true</bool>
        </property>
-       <property name="leftMargin">
-        <number>10</number>
-       </property>
-       <property name="topMargin">
-        <number>10</number>
-       </property>
-       <property name="rightMargin">
-        <number>10</number>
-       </property>
-       <property name="bottomMargin">
-        <number>10</number>
-       </property>
-      </layout>
-     </widget>
-    </widget>
+       <widget class="QWidget" name="scrollContent">
+        <layout class="QVBoxLayout" name="projectsLayout"/>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QWidget" name="employeesPanel">
+       <layout class="QVBoxLayout" name="employeesLayout">
+        <property name="leftMargin">
+         <number>10</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+       </layout>
+      </widget>
+     </item>
+    </layout>
    </item>
-
   </layout>
  </widget>
  <resources/>

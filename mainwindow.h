@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "myticketstab.h"
+#include "myprojectstab.h"
 #include <QMainWindow>
 #include "profiletab.h"
 
@@ -16,6 +17,7 @@ public:
     MainWindow(int userId, const QString& name, const QString& role, QWidget *parent = nullptr);
     ~MainWindow();
     ProfileTab* profileTab;
+    MyProjectsTab* projectsTab = nullptr;
 
 private:
     Ui::MainWindow *ui;

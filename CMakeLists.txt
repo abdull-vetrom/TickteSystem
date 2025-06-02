@@ -47,6 +47,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         addemployeedialog.h addemployeedialog.cpp
         profiletab.ui
         myprojectstab.ui
+        userprofileeditdialog.h userprofileeditdialog.cpp
+        userprofileeditdialog.ui
+        editemployeedialog.h editemployeedialog.cpp
+        editemployeedialog.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET TicketSystem APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

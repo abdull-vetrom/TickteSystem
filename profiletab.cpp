@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "storagemanager.h"
 #include "addemployeedialog.h"
+#include "userprofileeditdialog.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -30,6 +31,8 @@ ProfileTab::ProfileTab(int userId_, QWidget *parent)
         AddEmployeeDialog dlg(userId, this);
         dlg.exec();
     });
+
+    connect(ui->editProfileButton, &QPushButton::clicked, this, &ProfileTab::onEditProfileClicked);
 
     loadProfile();
 }
@@ -79,6 +82,51 @@ void ProfileTab::loadProfile() {
     if (role == "начальник") {
         loadProjectStats();
         ui->addEmployeeButton->show();
+    }
+}
+
+void ProfileTab::onEditProfileClicked() {
+    UserProfileEditDialog dialog(userId, this);
+    if (dialog.exec() == QDialog::Accepted) {
+        // Перезагрузить только текстовую информацию и фото, без статистики
+        reloadPersonalInfo();
+        refreshStats();  // Статистику — отдельно и только один раз
+    }
+}
+
+void ProfileTab::reloadPersonalInfo() {
+    QSqlQuery query;
+    QString sql = loadSqlQuery(":/sql/getUserProfileInfo.sql");
+    query.prepare(sql);
+    query.bindValue(":id", userId);
+
+    if (!query.exec() || !query.next()) {
+        qDebug() << "Ошибка загрузки профиля:" << query.lastError().text();
+        return;
+    }
+
+    QString firstName = query.value("first_name").toString();
+    QString middleName = query.value("middle_name").toString();
+    QString lastName  = query.value("last_name").toString();
+    QString email     = query.value("email").toString();
+    QString role      = query.value("role").toString();
+    QString department = query.value("department").toString();
+    QString photoPath = query.value("photo_path").toString();
+
+    userRole = role;
+
+    ui->labelName->setText("👤 ФИО: " + lastName + " " + firstName + " " + middleName);
+    ui->labelEmail->setText("📧 Почта: " + email);
+    ui->labelRole->setText("🛡️ Роль: " + role);
+    ui->labelDept->setText("🏢 Отдел: " + department);
+
+    if (!photoPath.isEmpty()) {
+        QPixmap pix(StorageManager::getAbsolutePath(photoPath));
+        ui->photoLabel->setPixmap(pix.scaled(ui->photoLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        ui->photoLabel->setText("");
+    } else {
+        ui->photoLabel->setText("Нет фото\nЗагрузите изображение");
+        ui->photoLabel->setStyleSheet("QLabel { border: 1px dashed #aaa; color: #666; font-style: italic; }");
     }
 }
 
