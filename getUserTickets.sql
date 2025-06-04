@@ -6,11 +6,11 @@ SELECT
     s.name AS status
 FROM
     tickets t
-JOIN projects p
+LEFT JOIN projects p
     ON t.project_id = p.id
-JOIN priorities pr
+LEFT JOIN priorities pr
     ON t.priority_id = pr.id
-JOIN statuses s
+LEFT JOIN statuses s
     ON t.status_id = s.id
 WHERE
     (t.assignee_id = :userId

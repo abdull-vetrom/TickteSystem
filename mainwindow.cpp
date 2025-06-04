@@ -26,7 +26,7 @@ void MainWindow::setupTabs() {
     ui->tabWidget->setTabsClosable(true); // Включаем крестики глобально
 
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, [this](int index) {
-        QWidget *tab = ui->tabWidget->widget(index);
+        QWidget* tab = ui->tabWidget->widget(index);
         if (tab == ticketsTab || tab == projectsTab || tab == profileTab)
             return;
 
@@ -44,14 +44,27 @@ void MainWindow::setupTabs() {
         connect(projectsTab, &MyProjectsTab::ticketsInvalidated, ticketsTab, &MyTicketsTab::loadTickets);
         connect(ticketsTab, &MyTicketsTab::ticketsChanged, projectsTab, &MyProjectsTab::loadProjects);
 
-        // Убираем крестик
+        // Убираем крестик с вкладки "Мои проекты"
         ui->tabWidget->tabBar()->setTabButton(projectsIndex, QTabBar::RightSide, nullptr);
     }
 
     profileTab = new ProfileTab(currentUserId);
     int profileIndex = ui->tabWidget->addTab(profileTab, "Мой профиль");
 
-    // Убираем крестики с базовых вкладок
-    ui->tabWidget->tabBar()->setTabButton(ticketsIndex, QTabBar::RightSide, nullptr);
+    // Убираем крестик с вкладки "Мой профиль"
     ui->tabWidget->tabBar()->setTabButton(profileIndex, QTabBar::RightSide, nullptr);
+
+    // Добавляем refresh-кнопку к "Мои тикеты"
+    QToolButton* refreshButton = new QToolButton(this);
+    refreshButton->setIcon(QIcon(":/icons/refresh.png"));
+    refreshButton->setToolTip("Обновить задачи");
+    refreshButton->setAutoRaise(true);
+    refreshButton->setIconSize(QSize(16, 16));
+
+    ui->tabWidget->tabBar()->setTabButton(ticketsIndex, QTabBar::RightSide, refreshButton);
+    connect(refreshButton, &QToolButton::clicked, ticketsTab, &MyTicketsTab::refreshTickets);
+
+    // Убираем крестик с вкладки "Мои тикеты"
+    ui->tabWidget->tabBar()->setTabButton(ticketsIndex, QTabBar::LeftSide, nullptr);  // только если крестик слева
 }
+
