@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QTabWidget>
 #include <QStandardItemModel>
+#include "ui_myticketstab.h"
 
 namespace Ui {
 class MyTicketsTab;
