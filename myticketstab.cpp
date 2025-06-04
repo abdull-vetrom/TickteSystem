@@ -13,6 +13,7 @@
 #include <QMessageBox>
 #include <QHeaderView>
 #include <QDebug>
+#include <QStackedLayout>
 
 MyTicketsTab::MyTicketsTab(int userId_, const QString& role_, QTabWidget* tabWidget_, QWidget* parent)
     : QWidget(parent),
@@ -22,34 +23,53 @@ MyTicketsTab::MyTicketsTab(int userId_, const QString& role_, QTabWidget* tabWid
     tabWidget(tabWidget_)
 {
     ui->setupUi(this);
+    // ui->doneGroup->setVisible(true);
 
+    // Переключение отображения завершённых задач через QStackedLayout
+    QStackedLayout* doneStack = qobject_cast<QStackedLayout*>(ui->doneStackedContainer->layout());
+    Q_ASSERT(doneStack);  // Убедимся, что указатель валиден
+    doneStack->setCurrentIndex(1);  // по умолчанию отображаем таблицу
+
+    connect(ui->toggleDoneButton, &QToolButton::toggled, this, [=](bool checked) {
+        doneStack->setCurrentIndex(checked ? 1 : 0);
+        ui->toggleDoneButton->setText(checked ? "▼" : "▲");
+    });
+
+    // Основная таблица
     model = new QStandardItemModel(this);
     model->setHorizontalHeaderLabels({"Название", "Проект", "Приоритет", "Статус"});
     ui->tableView->setModel(model);
-    ui->tableView->horizontalHeader()->setStretchLastSection(true);
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->tableView->verticalHeader()->setVisible(false);
     ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->tableView->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->tableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->tableView->setFixedHeight(250);
 
     connect(ui->tableView, &QTableView::clicked, this, &MyTicketsTab::onTicketClicked);
 
+    // Кнопка создания тикета
     if (userRole != "начальник") {
         ui->createTicketButton->hide();
-        // ui->doneTableView->hide();
-        // ui->labelDone->hide();
     } else {
         connect(ui->createTicketButton, &QPushButton::clicked, this, &MyTicketsTab::onCreateTicketClicked);
     }
 
+    // Завершённые задачи
     doneModel = new QStandardItemModel(this);
     doneModel->setHorizontalHeaderLabels({"Название", "Проект", "Приоритет", "Статус"});
     ui->doneTableView->setModel(doneModel);
-    ui->doneTableView->horizontalHeader()->setStretchLastSection(true);
     ui->doneTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->doneTableView->verticalHeader()->setVisible(false);
     ui->doneTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->doneTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->doneTableView->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->doneTableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->doneTableView->setFixedHeight(250);
+
+    // ui->doneTableContainer->setVisible(true); // начальное состояние
+
     connect(ui->doneTableView, &QTableView::clicked, this, &MyTicketsTab::onTicketClicked);
 
     loadTickets();
@@ -66,7 +86,6 @@ void MyTicketsTab::onCreateTicketClicked() {
     if (auto* mw = qobject_cast<MainWindow*>(window())) {
         if (mw->profileTab)
             connect(dialog, &CreateTicketDialog::ticketCreated, mw->profileTab, &ProfileTab::refreshStats);
-
         if (mw->projectsTab)
             connect(dialog, &CreateTicketDialog::ticketCreated, mw->projectsTab, &MyProjectsTab::loadProjects);
     }
@@ -80,8 +99,8 @@ void MyTicketsTab::onTicketClicked(const QModelIndex& index) {
 
     int row = index.row();
     const QAbstractItemModel* source = index.model();
-
     int ticketId = -1;
+
     if (source == model)
         ticketId = model->item(row, 0)->data(Qt::UserRole).toInt();
     else if (doneModel && source == doneModel)
@@ -126,7 +145,8 @@ void MyTicketsTab::loadTickets() {
         QList<QStandardItem*> row;
         for (int i = 1; i <= 4; ++i) {
             QStandardItem* item = new QStandardItem(query.value(i).toString());
-            if (i == 1) item->setData(ticketId, Qt::UserRole);
+            if (i == 1)
+                item->setData(ticketId, Qt::UserRole);
             row.append(item);
         }
 
@@ -144,8 +164,7 @@ void MyTicketsTab::loadTickets() {
 
     ui->tableView->setItemDelegate(new PriorityDelegate(this));
 
-    // if (userRole != "начальник") return;
-
+    // Завершённые задачи
     doneModel->removeRows(0, doneModel->rowCount());
 
     QSqlQuery doneQuery;
@@ -171,6 +190,5 @@ void MyTicketsTab::loadTickets() {
         }
     }
 
-    ui->labelDone->show();
-    ui->doneTableView->show();
+    ui->doneTableView->setItemDelegate(new PriorityDelegate(this));
 }

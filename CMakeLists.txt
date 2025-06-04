@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.16)
 
 project(TicketSystem VERSION 0.1 LANGUAGES CXX)
 
+# --- VMime include & lib ---
+include_directories("C:/msys64/mingw64/include")
+link_directories("C:/msys64/mingw64/lib")
+
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -10,81 +14,69 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets PrintSupport)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets PrintSupport)
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Sql PrintSupport)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets Sql PrintSupport)
 
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
+    main.cpp
+    mailtest.cpp
+    mainwindow.cpp
+    mainwindow.h
+    mainwindow.ui
+    dbmanager.h dbmanager.cpp
+    loginwindow.h loginwindow.cpp
+    loginwindow.ui
+    user.h user.cpp
+    ticket.h ticket.cpp
+    ticketcard.ui
+    myticketstab.h myticketstab.cpp myticketstab.ui
+    myprojectstab.h myprojectstab.cpp myprojectstab.ui
+    profiletab.h profiletab.cpp profiletab.ui
+    createticketdialog.h createticketdialog.cpp createticketdialog.ui
+    utils.h utils.cpp
+    resources.qrc
+    tickettable.ui
+    ticketcard.h ticketcard.cpp
+    createprojectdialog.cpp createprojectdialog.h createprojectdialog.ui
+    storagemanager.h storagemanager.cpp
+    prioritydelegate.h prioritydelegate.cpp
+    addemployeedialog.h addemployeedialog.cpp
+    userprofileeditdialog.h userprofileeditdialog.cpp userprofileeditdialog.ui
+    editemployeedialog.h editemployeedialog.cpp editemployeedialog.ui
+    mailtest.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(TicketSystem
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        dbmanager.h dbmanager.cpp
-        loginwindow.h loginwindow.cpp
-        loginwindow.ui
-        user.h user.cpp
-        ticket.h ticket.cpp
-        ticketcard.ui
-        myticketstab.h myticketstab.cpp myticketstab.ui
-        myprojectstab.h myprojectstab.cpp
-        profiletab.h profiletab.cpp
-        createticketdialog.h createticketdialog.cpp
-        createticketdialog.ui
-        utils.h utils.cpp
-        resources.qrc
-        tickettable.ui
-        ticketcard.h ticketcard.cpp
-        createprojectdialog.cpp
-        createprojectdialog.h
-        createprojectdialog.ui
-        storagemanager.h storagemanager.cpp
-        prioritydelegate.h prioritydelegate.cpp
-        addemployeedialog.h addemployeedialog.cpp
-        profiletab.ui
-        myprojectstab.ui
-        userprofileeditdialog.h userprofileeditdialog.cpp
-        userprofileeditdialog.ui
-        editemployeedialog.h editemployeedialog.cpp
-        editemployeedialog.ui
+        mycertverifier.h mycertverifier.cpp
+
     )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET TicketSystem APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
-        add_library(TicketSystem SHARED
-            ${PROJECT_SOURCES}
-        )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
+        add_library(TicketSystem SHARED ${PROJECT_SOURCES})
     else()
-        add_executable(TicketSystem
-            ${PROJECT_SOURCES}
-        )
+        add_executable(TicketSystem ${PROJECT_SOURCES})
     endif()
 endif()
 
 target_link_libraries(TicketSystem
-    PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
+    PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
     Qt6::Core
     Qt6::Gui
-    Qt6::Widgets
     Qt6::Sql
     Qt6::PrintSupport
+    vmime
+    ssl
+    crypto
+    ws2_32
 )
 
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting an
-# explicit, fixed bundle identifier manually though.
 if(${QT_VERSION} VERSION_LESS 6.1.0)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.TicketSystem)
 endif()
+
 set_target_properties(TicketSystem PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}

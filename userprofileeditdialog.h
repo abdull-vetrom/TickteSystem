@@ -15,6 +15,7 @@ public:
 
 signals:
     void profileUpdated();
+    void loadEmployees();
 
 private slots:
     void onSaveClicked();

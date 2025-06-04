@@ -1,6 +1,5 @@
 #include "userprofileeditdialog.h"
 #include "ui_userprofileeditdialog.h"
-
 #include "utils.h"
 
 #include <QMessageBox>
