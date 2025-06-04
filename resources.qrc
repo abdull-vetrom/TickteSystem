@@ -52,5 +52,9 @@
         <file>folder_closed.png</file>
         <file>folder_open.png</file>
         <file>edit.png</file>
+        <file>refresh.png</file>
+    </qresource>
+    <qresource prefix="/certs">
+        <file>cert.pem</file>
     </qresource>
 </RCC>

@@ -50,6 +50,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         mycertverifier.h mycertverifier.cpp
+        mailservice.h mailservice.cpp
 
     )
 else()

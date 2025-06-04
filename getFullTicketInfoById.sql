@@ -11,17 +11,17 @@ SELECT
     t.created_at
 FROM
     tickets t
-JOIN projects p ON
+LEFT JOIN projects p ON
     t.project_id = p.id
-JOIN trackers tr ON
+LEFT JOIN trackers tr ON
     t.tracker_id = tr.id
-JOIN statuses s ON
+LEFT JOIN statuses s ON
     t.status_id = s.id
-JOIN priorities pr ON
+LEFT JOIN priorities pr ON
     t.priority_id = pr.id
-JOIN users u1 ON
+LEFT JOIN users u1 ON
     t.assignee_id = u1.id
-JOIN users u2 ON
+LEFT JOIN users u2 ON
     t.watcher_id = u2.id
 WHERE
     t.id = :ticketId

@@ -31,7 +31,8 @@ private:
 
     QStandardItemModel* model = nullptr;
     QStandardItemModel* doneModel = nullptr;
-
+public slots:
+    void refreshTickets();
 signals:
     void ticketsChanged();
 };

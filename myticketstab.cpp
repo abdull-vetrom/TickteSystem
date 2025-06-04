@@ -6,6 +6,7 @@
 #include "prioritydelegate.h"
 #include "mainwindow.h"
 #include "profiletab.h"
+#include "mailservice.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -14,6 +15,7 @@
 #include <QHeaderView>
 #include <QDebug>
 #include <QStackedLayout>
+#include <QDateTime>
 
 MyTicketsTab::MyTicketsTab(int userId_, const QString& role_, QTabWidget* tabWidget_, QWidget* parent)
     : QWidget(parent),
@@ -192,3 +194,61 @@ void MyTicketsTab::loadTickets() {
 
     ui->doneTableView->setItemDelegate(new PriorityDelegate(this));
 }
+
+void MyTicketsTab::refreshTickets() {
+    QSqlQuery roleQuery;
+    roleQuery.prepare("SELECT role FROM users WHERE id = :userId");
+    roleQuery.bindValue(":userId", userId);
+
+    if (!roleQuery.exec() || !roleQuery.next()) {
+        qWarning() << "Не удалось определить роль пользователя";
+        loadTickets();
+        return;
+    }
+
+    QString role = roleQuery.value(0).toString();
+    if (role != "распределитель") {
+        loadTickets();
+        return;
+    }
+
+    MailService mailService("C:\\Users\\Hp\\Desktop\\TickteSystem\\cert.pem");
+    QList<MailMessage> messages = mailService.fetchAllMail();
+
+    QSqlQuery checkQuery, insertEmailQuery, insertTicketQuery;
+    checkQuery.prepare("SELECT COUNT(*) FROM processed_emails WHERE uid = :uid");
+    insertEmailQuery.prepare("INSERT INTO processed_emails (uid) VALUES (:uid)");
+    insertTicketQuery.prepare(R"(
+        INSERT INTO tickets (title, description, status_id, assignee_id, creator_id, start_date, created_at)
+        VALUES (:title, :description, 4, :assignee_id, :assignee_id, :start_date, :created_at)
+    )");
+
+    for (const MailMessage& msg : messages) {
+        checkQuery.bindValue(":uid", msg.uid);
+        if (!checkQuery.exec() || !checkQuery.next()) continue;
+        if (checkQuery.value(0).toInt() > 0) continue;
+
+        insertEmailQuery.bindValue(":uid", msg.uid);
+        if (!insertEmailQuery.exec()) {
+            qWarning() << "Ошибка вставки UID:" << insertEmailQuery.lastError().text();
+            continue;
+        }
+
+        QString composedDescription = QString("Отправитель: %1\n\n%2").arg(msg.sender, msg.body);
+        insertTicketQuery.bindValue(":title", msg.subject);
+        insertTicketQuery.bindValue(":description", composedDescription); // Автор — распределитель
+        insertTicketQuery.bindValue(":assignee_id", userId);  // Назначен тоже он
+        insertTicketQuery.bindValue(":start_date", QDateTime::currentDateTime());
+        insertTicketQuery.bindValue(":created_at", QDateTime::currentDateTime());
+        qDebug() << "Query text:" << insertTicketQuery.lastQuery();
+        if (!insertTicketQuery.exec()) {
+            qWarning() << "Ошибка вставки тикета:" << insertTicketQuery.lastError().text();
+            continue;
+        }
+
+        // TODO: Добавить привязку файлов, если необходимо
+    }
+
+    loadTickets();
+}
+

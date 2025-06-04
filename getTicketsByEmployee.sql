@@ -4,7 +4,7 @@ SELECT
     tr.name AS tracker
 FROM
     tickets t
-JOIN trackers tr ON
+LEFT JOIN trackers tr ON
     t.tracker_id = tr.id
 WHERE
     t.assignee_id = :userId
