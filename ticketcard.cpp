@@ -112,11 +112,26 @@ void TicketCard::onEditClicked() {
         }
         ui.editPriority->setCurrentText(ticket.priority);
 
-        sql = loadSqlQuery(":/sql/getUsersIdAndFullName.sql");
+        QString currentUserRole;
+        QString roleSql = loadSqlQuery(":/sql/getUserRoleById.sql");
+        QSqlQuery roleQuery;
+        roleQuery.prepare(roleSql);
+        roleQuery.bindValue(":userId", userId);
+        if (roleQuery.exec() && roleQuery.next()) {
+            currentUserRole = roleQuery.value("role").toString();
+        }
+
+        if (currentUserRole == "распределитель") {
+            sql = loadSqlQuery(":/sql/getBossesIdAndFullName.sql");
+        } else {
+            sql = loadSqlQuery(":/sql/getUsersIdAndFullName.sql");
+        }
+
         QSqlQuery queryUsers(sql);
         ui.editAssignee->clear();
         ui.editWatcher->clear();
         userMap.clear();
+
         while (queryUsers.next()) {
             int id = queryUsers.value("id").toInt();
             QString name = queryUsers.value("full_name").toString();
@@ -124,6 +139,7 @@ void TicketCard::onEditClicked() {
             ui.editWatcher->addItem(name);
             userMap[name] = id;
         }
+
         ui.editAssignee->setCurrentText(ticket.assignee);
         ui.editWatcher->setCurrentText(ticket.watcher);
 
