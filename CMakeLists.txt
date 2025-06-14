@@ -18,7 +18,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets Sql Prin
 
 set(PROJECT_SOURCES
     main.cpp
-    mailtest.cpp
+
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
@@ -42,7 +42,7 @@ set(PROJECT_SOURCES
     addemployeedialog.h addemployeedialog.cpp
     userprofileeditdialog.h userprofileeditdialog.cpp userprofileeditdialog.ui
     editemployeedialog.h editemployeedialog.cpp editemployeedialog.ui
-    mailtest.h
+
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
